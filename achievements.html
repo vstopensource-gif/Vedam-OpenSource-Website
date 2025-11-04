@@ -146,7 +146,7 @@
 
       /* Sidebar Navigation */
       .sidebar {
-        width: 280px;
+        width: 320px;
         background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
         color: white;
         position: fixed;
@@ -169,10 +169,19 @@
         gap: 0.8rem;
         font-size: 1.5rem;
         font-weight: 700;
+        text-decoration: none;
+        color: inherit;
       }
 
       .sidebar-logo i {
         font-size: 2rem;
+      }
+
+      .sidebar-logo:hover,
+      .sidebar-logo:focus,
+      .sidebar-logo:visited {
+        text-decoration: none;
+        color: inherit;
       }
 
       .sidebar-nav {
@@ -249,6 +258,10 @@
       .user-info-sidebar p {
         font-size: 0.8rem;
         opacity: 0.8;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .logout-btn-sidebar {
@@ -277,7 +290,7 @@
       /* Main Content Area */
       .main-content {
         flex: 1;
-        margin-left: 280px;
+        margin-left: 320px;
         min-height: 100vh;
         transition: all 0.3s ease;
       }
@@ -506,10 +519,10 @@
       <!-- Sidebar Navigation -->
       <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-          <div class="sidebar-logo">
+          <a href="dashboard.html" class="sidebar-logo">
             <i class="fas fa-code"></i>
             <span>Vedam Club</span>
-          </div>
+          </a>
         </div>
 
         <nav class="sidebar-nav">
@@ -517,7 +530,7 @@
             <i class="fas fa-home"></i>
             <span>Overview</span>
           </a>
-          <a href="github.html" class="nav-item active">
+          <a href="github.html" class="nav-item">
             <i class="fab fa-github"></i>
             <span>GitHub Activity</span>
           </a>
@@ -573,78 +586,24 @@
 
         <div class="content-area">
           
-          <div class="dashboard-grid" id="contentGrid">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <div class="card-icon">
-                  <i class="fas fa-code"></i>
-                </div>
-                <h3 class="card-title">First Contribution</h3>
-              </div>
-              <div class="card-content">
-                <p>Make your first contribution to a club project.</p>
-                <div style="margin-top: 1rem; background: #f0f0f0; height: 8px; border-radius: 4px; overflow: hidden;">
-                  <div style="background: linear-gradient(135deg, #667eea, #764ba2); height: 100%; width: 75%;"></div>
-                </div>
-                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">75% Complete</p>
-              </div>
-            </div>
-            
-            <div class="dashboard-card">
-              <div class="card-header">
-                <div class="card-icon">
-                  <i class="fab fa-github"></i>
-                </div>
-                <h3 class="card-title">GitHub Connected</h3>
-              </div>
-              <div class="card-content">
-                <p>Successfully connected your GitHub account.</p>
-                <div style="margin-top: 1rem; background: #f0f0f0; height: 8px; border-radius: 4px; overflow: hidden;">
-                  <div style="background: linear-gradient(135deg, #667eea, #764ba2); height: 100%; width: 100%;"></div>
-                </div>
-                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #10b981;">
-                  <i class="fas fa-check-circle"></i> Completed
-                </p>
-              </div>
-            </div>
-
-            <div class="dashboard-card">
-              <div class="card-header">
-                <div class="card-icon">
-                  <i class="fas fa-users"></i>
-                </div>
-                <h3 class="card-title">Active Member</h3>
-              </div>
-              <div class="card-content">
-                <p>Participate in 5 community discussions.</p>
-                <div style="margin-top: 1rem; background: #f0f0f0; height: 8px; border-radius: 4px; overflow: hidden;">
-                  <div style="background: linear-gradient(135deg, #667eea, #764ba2); height: 100%; width: 40%;"></div>
-                </div>
-                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">40% Complete (2/5)</p>
-              </div>
-            </div>
-
-            <div class="dashboard-card">
-              <div class="card-header">
-                <div class="card-icon">
-                  <i class="fas fa-calendar"></i>
-                </div>
-                <h3 class="card-title">Event Attendee</h3>
-              </div>
-              <div class="card-content">
-                <p>Attend 3 club events or workshops.</p>
-                <div style="margin-top: 1rem; background: #f0f0f0; height: 8px; border-radius: 4px; overflow: hidden;">
-                  <div style="background: linear-gradient(135deg, #667eea, #764ba2); height: 100%; width: 66%;"></div>
-                </div>
-                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">66% Complete (2/3)</p>
-              </div>
-            </div>
-          </div>
+          <div class="dashboard-grid" id="contentGrid"></div>
 
         </div>
       </div>
     </div>
     <script>
+    </script>
+    <script>
+      // Highlight correct sidebar item based on current page
+      (function(){
+        try {
+          const path = window.location.pathname.split('/').pop() || 'achievements.html';
+          const navLinks = document.querySelectorAll('.sidebar-nav .nav-item');
+          navLinks.forEach((a) => a.classList.remove('active'));
+          const match = Array.from(navLinks).find(a => (a.getAttribute('href') || '').endsWith(path));
+          if (match) match.classList.add('active');
+        } catch(e) {}
+      })();
     </script>
   </body>
 </html>

@@ -86,6 +86,8 @@
       window.set = set;
       window.onDisconnect = onDisconnect;
       window.get = get;
+      // expose auth state listener for non-module scripts
+      window.onAuthStateChanged = onAuthStateChanged;
     </script>
 
     <style>
@@ -108,7 +110,7 @@
 
       /* Sidebar Navigation */
       .sidebar {
-        width: 280px;
+        width: 320px;
         background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
         color: white;
         position: fixed;
@@ -131,10 +133,19 @@
         gap: 0.8rem;
         font-size: 1.5rem;
         font-weight: 700;
+        text-decoration: none;
+        color: inherit;
       }
 
       .sidebar-logo i {
         font-size: 2rem;
+      }
+
+      .sidebar-logo:hover,
+      .sidebar-logo:focus,
+      .sidebar-logo:visited {
+        text-decoration: none;
+        color: inherit;
       }
 
       .sidebar-nav {
@@ -202,6 +213,10 @@
       .user-info-sidebar p {
         font-size: 0.8rem;
         opacity: 0.8;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .logout-btn-sidebar {
@@ -229,7 +244,7 @@
       /* Main Content Area */
       .main-content {
         flex: 1;
-        margin-left: 280px;
+        margin-left: 320px;
         min-height: 100vh;
         transition: all 0.3s ease;
       }
@@ -1245,14 +1260,14 @@
       <!-- Sidebar Navigation -->
       <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-          <div class="sidebar-logo">
+          <a href="dashboard.html" class="sidebar-logo">
             <i class="fas fa-code"></i>
             <span>Vedam Club</span>
-          </div>
+          </a>
         </div>
 
         <nav class="sidebar-nav">
-          <a href="dashboard.html" class="nav-item active" aria-current="page">
+          <a href="dashboard.html" class="nav-item" aria-current="page">
             <i class="fas fa-home"></i>
             <span>Overview</span>
           </a>
@@ -1391,6 +1406,27 @@
     <script>
       // Check if user is logged in and has complete profile with GitHub
       document.addEventListener("DOMContentLoaded", async function () {
+        // Highlight correct sidebar item based on current page
+        try {
+          const path = window.location.pathname.split('/').pop() || 'dashboard.html';
+          const navLinks = document.querySelectorAll('.sidebar-nav .nav-item');
+          navLinks.forEach((a) => a.classList.remove('active'));
+          const match = Array.from(navLinks).find(a => (a.getAttribute('href') || '').endsWith(path));
+          if (match) match.classList.add('active');
+        } catch {}
+
+        // Load user info as soon as auth is available
+        try {
+          if (window.onAuthStateChanged && window.auth) {
+            window.onAuthStateChanged(window.auth, function(user){
+              if (user) {
+                loadUserData();
+                loadGitHubActivity();
+              }
+            });
+          }
+        } catch(e) {}
+
         // Initialize navigation  
         // Wait for Firebase to initialize
         setTimeout(async () => {
@@ -1454,6 +1490,12 @@
               if (window.currentUserData.photoURL) {
                 const avatar = document.getElementById("userAvatarSidebar");
                 avatar.innerHTML = `<img src="${window.currentUserData.photoURL}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                // Ensure avatar is visible like other pages
+                avatar.style.display = 'block';
+                avatar.style.width = '40px';
+                avatar.style.height = '40px';
+                avatar.style.borderRadius = '50%';
+                avatar.style.overflow = 'hidden';
               }
 
               
