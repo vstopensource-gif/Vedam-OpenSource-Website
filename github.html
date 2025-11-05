@@ -108,13 +108,27 @@
               if (userNameEl) userNameEl.textContent = window.currentUserData.displayName;
               if (userEmailEl) userEmailEl.textContent = window.currentUserData.email;
               
-              if (userAvatarEl && window.currentUserData.photoURL) {
-                userAvatarEl.innerHTML = `<img src="${window.currentUserData.photoURL}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-                userAvatarEl.style.display = 'block';
-                userAvatarEl.style.width = '40px';
-                userAvatarEl.style.height = '40px';
-                userAvatarEl.style.borderRadius = '50%';
-                userAvatarEl.style.overflow = 'hidden';
+              if (userAvatarEl) {
+                if (window.currentUserData.photoURL) {
+                  userAvatarEl.innerHTML = `<img src="${window.currentUserData.photoURL}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                  userAvatarEl.style.display = 'block';
+                  userAvatarEl.style.width = '40px';
+                  userAvatarEl.style.height = '40px';
+                  userAvatarEl.style.borderRadius = '50%';
+                  userAvatarEl.style.overflow = 'hidden';
+                } else {
+                  // Generate initials from name
+                  const name = window.currentUserData.displayName || 'User';
+                  const words = name.trim().split(/\s+/);
+                  let initials = '';
+                  if (words.length >= 2) {
+                    initials = (words[0][0] + words[words.length - 1][0]).toUpperCase();
+                  } else {
+                    initials = name.substring(0, 2).toUpperCase();
+                  }
+                  userAvatarEl.innerHTML = initials;
+                  userAvatarEl.style.fontSize = initials.length > 1 ? '0.85rem' : '1rem';
+                }
               }
               
               loadGitHubActivity(user.uid);
@@ -246,11 +260,14 @@
         align-items: center;
         gap: 1rem;
         margin-bottom: 1rem;
+        min-width: 0; /* Allow flex children to shrink */
       }
 
       .user-avatar-sidebar {
         width: 40px;
         height: 40px;
+        min-width: 40px; /* Prevent shrinking */
+        flex-shrink: 0; /* Prevent the circle from changing shape */
         border-radius: 50%;
         background: #667eea;
         display: flex;
@@ -259,12 +276,26 @@
         color: white;
         font-weight: 600;
         overflow: hidden;
+        font-size: 0.85rem; /* Base font size for initials */
+        line-height: 1;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .user-info-sidebar {
+        flex: 1; /* Take remaining space */
+        min-width: 0; /* Critical for text truncation in flex */
+        overflow: hidden;
       }
 
       .user-info-sidebar h4 {
         font-size: 0.9rem;
         font-weight: 600;
         margin-bottom: 0.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
       }
 
       .user-info-sidebar p {
@@ -794,7 +825,6 @@
         if (languageChart) languageChart.destroy();
         if (prStatusChart) prStatusChart.destroy();
         if (recentPrsChart) recentPrsChart.destroy();
-        if (languageChart) languageChart.destroy();
 
         activityChart = new Chart(ctx, {
           type: 'bar',
@@ -906,11 +936,8 @@
                 tooltip: {
                   callbacks: {
                     label: function(context){
-                      const dataset = context.dataset;
-                      const total = dataset.data.reduce((a,b)=>a + (Number(b)||0), 0);
                       const val = Number(context.raw) || 0;
-                      const pct = total ? ((val/total)*100).toFixed(1) : 0;
-                      return `${context.label}: ${pct}%`;
+                      return `${context.label}: ${val.toLocaleString()}`;
                     }
                   }
                 }
