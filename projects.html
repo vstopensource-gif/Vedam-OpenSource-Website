@@ -15,21 +15,20 @@
     />
     <!-- Firebase SDK -->
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+      // Import Firebase services from config module
+      import { auth, db, realtimeDb } from './firebase-config.js';
+      
+      // Import additional Firebase functions
       import {
-        getAuth,
         onAuthStateChanged,
         signOut,
       } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
       import {
-        getFirestore,
         doc,
         getDoc,
         setDoc,
       } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
       import {
-        getDatabase,
         ref,
         push,
         onValue,
@@ -39,22 +38,6 @@
         onDisconnect,
         get,
       } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyBO0PAmNKXjTJGH1aRsEc2vJJnR1Y-Tum8",
-        authDomain: "vedamopensource007.firebaseapp.com",
-        projectId: "vedamopensource007",
-        storageBucket: "vedamopensource007.firebasestorage.app",
-        messagingSenderId: "1097939608119",
-        appId: "1:1097939608119:web:90e2923b4c3ed3fd1515b2",
-        measurementId: "G-G8V5WT7S5V",
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
-      const realtimeDb = getDatabase(app);
 
       window.auth = auth;
       window.db = db;
@@ -106,13 +89,27 @@
               if (userNameEl) userNameEl.textContent = window.currentUserData.displayName;
               if (userEmailEl) userEmailEl.textContent = window.currentUserData.email;
               
-              if (userAvatarEl && window.currentUserData.photoURL) {
-                userAvatarEl.innerHTML = `<img src="${window.currentUserData.photoURL}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-                userAvatarEl.style.display = 'block';
-                userAvatarEl.style.width = '40px';
-                userAvatarEl.style.height = '40px';
-                userAvatarEl.style.borderRadius = '50%';
-                userAvatarEl.style.overflow = 'hidden';
+              if (userAvatarEl) {
+                if (window.currentUserData.photoURL) {
+                  userAvatarEl.innerHTML = `<img src="${window.currentUserData.photoURL}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                  userAvatarEl.style.display = 'block';
+                  userAvatarEl.style.width = '40px';
+                  userAvatarEl.style.height = '40px';
+                  userAvatarEl.style.borderRadius = '50%';
+                  userAvatarEl.style.overflow = 'hidden';
+                } else {
+                  // Generate initials from name
+                  const name = window.currentUserData.displayName || 'User';
+                  const words = name.trim().split(/\s+/);
+                  let initials = '';
+                  if (words.length >= 2) {
+                    initials = (words[0][0] + words[words.length - 1][0]).toUpperCase();
+                  } else {
+                    initials = name.substring(0, 2).toUpperCase();
+                  }
+                  userAvatarEl.innerHTML = initials;
+                  userAvatarEl.style.fontSize = initials.length > 1 ? '0.85rem' : '1rem';
+                }
               }
               
               loadGitHubActivity(user.uid);
@@ -234,11 +231,14 @@
         align-items: center;
         gap: 1rem;
         margin-bottom: 1rem;
+        min-width: 0; /* Allow flex children to shrink */
       }
 
       .user-avatar-sidebar {
         width: 40px;
         height: 40px;
+        min-width: 40px; /* Prevent shrinking */
+        flex-shrink: 0; /* Prevent the circle from changing shape */
         border-radius: 50%;
         background: #667eea;
         display: flex;
@@ -247,12 +247,26 @@
         color: white;
         font-weight: 600;
         overflow: hidden;
+        font-size: 0.85rem; /* Base font size for initials */
+        line-height: 1;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .user-info-sidebar {
+        flex: 1; /* Take remaining space */
+        min-width: 0; /* Critical for text truncation in flex */
+        overflow: hidden;
       }
 
       .user-info-sidebar h4 {
         font-size: 0.9rem;
         font-weight: 600;
         margin-bottom: 0.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
       }
 
       .user-info-sidebar p {

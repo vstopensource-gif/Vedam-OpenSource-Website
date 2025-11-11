@@ -1,0 +1,45 @@
+// Firebase Configuration Module
+// This file uses placeholders that are replaced during build
+
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+import { 
+  getAuth, 
+  setPersistence, 
+  browserLocalPersistence, 
+  indexedDBLocalPersistence 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+// Firebase configuration with placeholders
+// These will be replaced by the build script in CI/CD
+// For local development, the dev server replaces these on-the-fly
+const firebaseConfig = {
+  apiKey: "VITE_FIREBASE_API_KEY",
+  authDomain: "VITE_FIREBASE_AUTH_DOMAIN",
+  projectId: "VITE_FIREBASE_PROJECT_ID",
+  storageBucket: "VITE_FIREBASE_STORAGE_BUCKET",
+  messagingSenderId: "VITE_FIREBASE_MESSAGING_SENDER_ID",
+  appId: "VITE_FIREBASE_APP_ID",
+  measurementId: "VITE_FIREBASE_MEASUREMENT_ID"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const realtimeDb = getDatabase(app);
+
+// Set persistence to indexedDB (more reliable across redirects); fallback to localStorage
+try {
+  await setPersistence(auth, indexedDBLocalPersistence);
+} catch (e) {
+  await setPersistence(auth, browserLocalPersistence);
+}
+
+// Export Firebase services
+export { app, analytics, auth, db, realtimeDb };
+

@@ -1,0 +1,80 @@
+# Netlify Configuration
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Build command runs the build script to inject environment variables
+  command = "npm install && npm run build"
+  
+  # Publish the root directory (all static files)
+  publish = "."
+  
+  # Functions directory (if needed in future)
+  # functions = "netlify/functions"
+
+[build.environment]
+  # Node version for build
+  NODE_VERSION = "18"
+
+# Redirect rules for SPA routing
+[[redirects]]
+  # Redirect all requests to index.html for client-side routing (if needed)
+  # Currently disabled since we have separate HTML files
+  # from = "/*"
+  # to = "/index.html"
+  # status = 200
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Prevent clickjacking
+    X-Frame-Options = "DENY"
+    
+    # Prevent MIME type sniffing
+    X-Content-Type-Options = "nosniff"
+    
+    # Enable XSS protection
+    X-XSS-Protection = "1; mode=block"
+    
+    # Referrer policy
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Content Security Policy (adjust as needed)
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.googletagmanager.com https://apis.google.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://api.github.com wss://*.firebaseio.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com;"
+
+# Cache static assets
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Deploy preview settings
+[context.deploy-preview]
+  command = "npm install && npm run build"
+
+[context.branch-deploy]
+  command = "npm install && npm run build"
+
+# Development context
+[context.development]
+  command = "npm install && npm run build"
+  
+# Production context
+[context.production]
+  command = "npm install && npm run build"
+

@@ -31,33 +31,20 @@ function isProduction() {
 }
 
 // Firebase configuration and initialization
-const firebaseConfig = {
-    apiKey: "AIzaSyBO0PAmNKXjTJGH1aRsEc2vJJnR1Y-Tum8",
-    authDomain: "vedamopensource007.firebaseapp.com",
-    projectId: "vedamopensource007",
-    storageBucket: "vedamopensource007.firebasestorage.app",
-    messagingSenderId: "1097939608119",
-    appId: "1:1097939608119:web:90e2923b4c3ed3fd1515b2",
-    measurementId: "G-G8V5WT7S5V"
-};
+// Firebase is now initialized in firebase-config.js module
+// This provides backward compatibility for pages that expect window.initializeFirebase()
 
-// Initialize Firebase (keep dynamic imports, but simplify globals exposure)
 let auth, db;
 
 async function initializeFirebase() {
     try {
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
-        const { getAuth, setPersistence, browserLocalPersistence, indexedDBLocalPersistence } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-        const { getFirestore, doc, setDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        // Import Firebase services from the config module
+        const firebaseModule = await import('./firebase-config.js');
+        auth = firebaseModule.auth;
+        db = firebaseModule.db;
 
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-        try {
-            await setPersistence(auth, indexedDBLocalPersistence);
-        } catch (e) {
-            await setPersistence(auth, browserLocalPersistence);
-        }
+        // Import Firestore functions
+        const { doc, setDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
 
         window.auth = auth;
         window.db = db;
