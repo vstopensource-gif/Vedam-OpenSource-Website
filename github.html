@@ -437,6 +437,166 @@
         width: 12px; height: 12px; border-radius: 2px; background: #e5e7eb;
       }
 
+      /* Tabs Section */
+      .details-section {
+        margin-top: 2rem;
+      }
+      
+      .tabs-container {
+        display: flex;
+        gap: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+        margin-bottom: 2rem;
+      }
+      
+      .tab-btn {
+        background: none;
+        border: none;
+        padding: 1rem 2rem;
+        cursor: pointer;
+        font-weight: 600;
+        color: #666;
+        transition: all 0.3s;
+        border-bottom: 3px solid transparent;
+        font-size: 1rem;
+      }
+      
+      .tab-btn:hover {
+        color: #667eea;
+      }
+      
+      .tab-btn.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+      }
+      
+      .tab-content {
+        display: none;
+      }
+      
+      .tab-content.active {
+        display: block;
+      }
+      
+      .pr-item, .commit-item, .repo-item {
+        background: white;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+      }
+      
+      .pr-item:hover, .commit-item:hover, .repo-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+      
+      .pr-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 0.75rem;
+      }
+      
+      .pr-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+      }
+      
+      .pr-title a {
+        color: #333;
+        text-decoration: none;
+      }
+      
+      .pr-title a:hover {
+        color: #667eea;
+      }
+      
+      .pr-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        font-size: 0.9rem;
+        color: #666;
+      }
+      
+      .pr-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+      
+      .pr-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      
+      .pr-badge.open {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      
+      .pr-badge.merged {
+        background: #ddd6fe;
+        color: #5b21b6;
+      }
+      
+      .pr-badge.closed {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      
+      .pr-body {
+        color: #666;
+        line-height: 1.6;
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+      }
+      
+      .repo-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+      }
+      
+      .repo-name a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      
+      .repo-name a:hover {
+        text-decoration: underline;
+      }
+      
+      .repo-stats {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+        color: #666;
+      }
+      
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+        font-size: 1.1rem;
+      }
+      
+      .empty-state i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 1rem;
+      }
+
       .dashboard-card {
         background: white;
         border-radius: 15px;
@@ -735,6 +895,36 @@
             <div id="heatmapPlaceholder" class="heatmap-grid" style="margin: 0 auto;"></div>
           </div>
 
+          <!-- Tabbed Details Section -->
+          <div class="details-section">
+            <div class="tabs-container">
+              <button class="tab-btn active" data-tab="prs">
+                <i class="fas fa-code-branch"></i> Pull Requests
+              </button>
+              <button class="tab-btn" data-tab="repos">
+                <i class="fas fa-folder"></i> Repositories
+              </button>
+            </div>
+            
+            <div class="tab-content active" id="prs-tab">
+              <div class="pr-list" id="prList">
+                <div class="empty-state">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>Loading pull requests...</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="tab-content" id="repos-tab">
+              <div class="repos-list" id="reposList">
+                <div class="empty-state">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>Loading repositories...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -749,10 +939,19 @@
         try {
           const cacheKey = `githubActivityCache:${uid}`;
           const cached = localStorage.getItem(cacheKey);
+          const reposCacheKey = `githubReposCache:${uid}`;
+          const cachedRepos = localStorage.getItem(reposCacheKey);
+          
           if (cached) {
             const activity = JSON.parse(cached);
             displayActivity(activity);
             createCharts(activity);
+            
+            // Load cached repos if available
+            if (cachedRepos) {
+              window.cachedRepos = JSON.parse(cachedRepos);
+              displayReposTab(window.cachedRepos);
+            }
             return;
           }
           // No cache: prompt user to refresh to fetch data
@@ -761,7 +960,7 @@
             overview.innerHTML = '<div class="metric-card"><div class="metric-number">—</div><div class="metric-label">Click Refresh to load data</div></div>';
           }
         } catch (error) {
-          console.error('Error loading cached activity:', error);
+console.error('Error loading cached activity:', error);
         }
       }
 
@@ -795,6 +994,16 @@
           renderHeatmap(activity.contributionCalendar);
         } else {
           heatmap.style.display = 'none';
+        }
+
+        // Populate tabs with data
+        if (activity.recentPRs) {
+          displayPRsTab(activity.recentPRs);
+        }
+        
+        // Get repos from cache or activity data
+        if (window.cachedRepos) {
+          displayReposTab(window.cachedRepos);
         }
       }
 
@@ -979,6 +1188,28 @@
           if (!token) throw new Error('GitHub not connected');
 
           const activity = await fetchGithubActivityData(token);
+          
+          // Fetch full repos list for the repos tab
+          const headers = { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' };
+          let allRepos = [];
+          let page = 1;
+          let hasMore = true;
+          
+          while (hasMore && page <= 10) { // Limit to 10 pages (1000 repos) for performance
+            const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&page=${page}&sort=updated`, { headers });
+            if (reposRes.ok) {
+              const pageRepos = await reposRes.json();
+              allRepos = allRepos.concat(pageRepos);
+              hasMore = pageRepos.length === 100;
+              page++;
+            } else {
+              break;
+            }
+          }
+          
+          // Store repos in global cache for tabs
+          window.cachedRepos = allRepos;
+          
           // Save to Firebase (structure kept same as existing usage)
           await window.setDoc(window.doc(window.db, 'Members', user.uid), {
             githubActivity: activity,
@@ -988,8 +1219,19 @@
           // Cache locally and render
           const cacheKey = `githubActivityCache:${user.uid}`;
           localStorage.setItem(cacheKey, JSON.stringify(activity));
+          const reposCacheKey = `githubReposCache:${user.uid}`;
+          localStorage.setItem(reposCacheKey, JSON.stringify(allRepos));
+          
           displayActivity(activity);
           createCharts(activity);
+          
+          // Populate tabs
+          if (activity.recentPRs) {
+            displayPRsTab(activity.recentPRs);
+          }
+          if (allRepos.length > 0) {
+            displayReposTab(allRepos);
+          }
 
           if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh'; }
         } catch (e) {
@@ -1001,50 +1243,96 @@
       }
 
       async function fetchGithubActivityData(accessToken) {
-        // Minimal fetch similar to dashboard logic; reads only and builds same structure
         const headers = { Authorization: `token ${accessToken}`, Accept: 'application/vnd.github.v3+json' };
-        // Basic account for username
+        
+        // Fetch user info (followers, following, etc.)
         const userRes = await fetch('https://api.github.com/user', { headers });
         if (!userRes.ok) throw new Error('GitHub auth failed');
         const user = await userRes.json();
+        const username = user.login;
 
-        // Repos
-        const reposRes = await fetch('https://api.github.com/user/repos?per_page=100&sort=updated', { headers });
-        if (!reposRes.ok) throw new Error('Failed to load repositories');
-        const repositories = await reposRes.json();
+        // Fetch ALL repositories with pagination
+        let repositories = [];
+        let page = 1;
+        let hasMore = true;
+        
+        while (hasMore) {
+          const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&page=${page}&sort=updated`, { headers });
+          if (!reposRes.ok) throw new Error('Failed to load repositories');
+          const pageRepos = await reposRes.json();
+          repositories = repositories.concat(pageRepos);
+          hasMore = pageRepos.length === 100;
+          page++;
+        }
 
-        // Events (for contributions, commits, PRs, issues)
-        const eventsRes = await fetch(`https://api.github.com/users/${user.login}/events?per_page=100`, { headers });
-        const events = eventsRes.ok ? await eventsRes.json() : [];
-        const prEvents = events.filter(e => e.type === 'PullRequestEvent');
-        const commits = events.filter(e => e.type === 'PushEvent').length;
-        const pullRequests = prEvents.length;
-        const issues = events.filter(e => e.type === 'IssuesEvent').length;
-        let openPRs = 0, mergedPRs = 0, closedPRs = 0;
-        prEvents.forEach(e => {
-          const pr = e && e.payload && e.payload.pull_request ? e.payload.pull_request : null;
-          if (!pr) return;
-          if (pr.merged) { mergedPRs += 1; }
-          else if (pr.state === 'closed') { closedPRs += 1; }
-          else if (pr.state === 'open') { openPRs += 1; }
-        });
-
-        // Improve PR status accuracy using Search API total_count (includes historical data)
+        // Use Search API for complete PR counts and data
+        let openPRs = 0, closedPRs = 0, mergedPRs = 0, totalIssues = 0;
+        let recentPRs = [];
+        
         try {
-          const searchBase = 'https://api.github.com/search/issues?q=';
-          const enc = encodeURIComponent;
-          const [openRes, closedRes, mergedRes] = await Promise.all([
-            fetch(`${searchBase}${enc(`is:pr author:${user.login} is:open`)}`, { headers }),
-            fetch(`${searchBase}${enc(`is:pr author:${user.login} is:closed`)}`, { headers }),
-            fetch(`${searchBase}${enc(`is:pr author:${user.login} is:merged`)}`, { headers }),
+          const [openPRsRes, mergedPRsRes, closedPRsRes, issuesRes] = await Promise.all([
+            fetch(`https://api.github.com/search/issues?q=author:${username}+type:pr+is:open&per_page=1`, { headers }),
+            fetch(`https://api.github.com/search/issues?q=author:${username}+type:pr+is:merged&per_page=1`, { headers }),
+            fetch(`https://api.github.com/search/issues?q=author:${username}+type:pr+is:closed+-is:merged&per_page=1`, { headers }),
+            fetch(`https://api.github.com/search/issues?q=author:${username}+type:issue&per_page=1`, { headers })
           ]);
-          if (openRes.ok) { const d = await openRes.json(); openPRs = d.total_count ?? openPRs; }
-          let closedTotal = closedPRs;
-          if (closedRes.ok) { const d = await closedRes.json(); closedTotal = d.total_count ?? closedPRs; }
-          if (mergedRes.ok) { const d = await mergedRes.json(); mergedPRs = d.total_count ?? mergedPRs; }
-          // closed includes merged; compute closed-only
-          closedPRs = Math.max(0, (closedTotal || 0) - (mergedPRs || 0));
-        } catch (_) {}
+          
+          if (openPRsRes.ok) {
+            const data = await openPRsRes.json();
+            openPRs = data.total_count || 0;
+          }
+          if (mergedPRsRes.ok) {
+            const data = await mergedPRsRes.json();
+            mergedPRs = data.total_count || 0;
+          }
+          if (closedPRsRes.ok) {
+            const data = await closedPRsRes.json();
+            closedPRs = data.total_count || 0;
+          }
+          if (issuesRes.ok) {
+            const data = await issuesRes.json();
+            totalIssues = data.total_count || 0;
+          }
+          
+          // Fetch detailed PR list (up to 100 most recent)
+          const prSearchRes = await fetch(`https://api.github.com/search/issues?q=author:${username}+type:pr&sort=created&order=desc&per_page=100`, { headers });
+          if (prSearchRes.ok) {
+            const prData = await prSearchRes.json();
+            recentPRs = prData.items.map(pr => ({
+              title: pr.title,
+              number: pr.number,
+              repo: pr.repository_url ? pr.repository_url.split('/').slice(-2).join('/') : 'Unknown',
+              state: pr.state,
+              created_at: pr.created_at,
+              updated_at: pr.updated_at,
+              url: pr.html_url,
+              body: pr.body || '',
+              comments: pr.comments || 0,
+              merged: pr.pull_request && pr.pull_request.merged_at ? true : false,
+              merged_at: pr.pull_request && pr.pull_request.merged_at ? pr.pull_request.merged_at : null
+            }));
+          }
+        } catch (searchError) {
+          console.error('Search API error:', searchError);
+        }
+        
+        // Fetch recent events for commits count
+        let events = [];
+        let commits = 0;
+        let contributions = 0;
+        
+        try {
+          const eventsRes = await fetch(`https://api.github.com/users/${username}/events?per_page=100`, { headers });
+          if (eventsRes.ok) {
+            events = await eventsRes.json();
+            commits = events.filter(event => event.type === 'PushEvent').reduce((total, event) => {
+              return total + (event.payload && event.payload.commits ? event.payload.commits.length : 0);
+            }, 0);
+            contributions = events.length;
+          }
+        } catch (eventsError) {
+          console.error('Events API error:', eventsError);
+        }
 
         // Aggregate
         const totalStars = repositories.reduce((s, r) => s + (r.stargazers_count || 0), 0);
@@ -1052,7 +1340,7 @@
 
         // Aggregate languages by bytes using per-repo languages endpoint
         const languagesMap = {};
-        const languagesPromises = repositories.slice(0, 50).map(async (repo) => {
+        const languagesPromises = repositories.slice(0, 100).map(async (repo) => {
           try {
             const res = await fetch(repo.languages_url, { headers });
             if (!res.ok) return;
@@ -1064,37 +1352,40 @@
           } catch(_) {}
         });
         await Promise.all(languagesPromises);
-        let languages = Object.entries(languagesMap)
-          .sort((a,b)=>b[1]-a[1])
-          .slice(0,10)
-          .map(([language, count]) => ({ language, count }));
-        if (!languages.length) {
-          // Fallback to primary language count if bytes unavailable
-          repositories.forEach(r => { if (r.language) languagesMap[r.language] = (languagesMap[r.language] || 0) + 1; });
-          languages = Object.entries(languagesMap).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([language,count])=>({language,count}));
-        }
 
-        // recentPRs for trend
-        const recentPRs = events.filter(e => e.type === 'PullRequestEvent').map(e => ({ created_at: e.created_at }));
-
+        // Build activity data matching exact Firebase schema
         return {
-          reposContributed: repositories.length,
+          // Counts
+          commits: commits,
+          contributions: contributions,
+          followers: user.followers || 0,
+          following: user.following || 0,
+          issues: events.filter(e => e.type === 'IssuesEvent').length,
+          totalIssues: totalIssues,
+          openPRs: openPRs,
+          closedPRs: closedPRs,
+          mergedPRs: mergedPRs,
+          pullRequests: openPRs + closedPRs + mergedPRs,
           publicRepos: repositories.filter(r => !r.private).length,
           privateRepos: repositories.filter(r => r.private).length,
-          totalStars,
-          totalForks,
-          commits,
-          pullRequests,
-          issues,
-          openPRs,
-          mergedPRs,
-          closedPRs,
-          contributions: events.length,
-          lastActivity: events.length ? events[0].created_at : new Date().toISOString(),
-          languages,
+          totalStars: totalStars,
+          totalForks: totalForks,
+          
+          // Languages as map { languageName: bytes }
+          languages: languagesMap,
+          
+          // Recent PRs array with full details
+          recentPRs: recentPRs,
+          
+          // Contribution calendar (null for now)
+          contributionCalendar: null,
+          
+          // Metadata
+          lastUpdated: new Date().toISOString(),
+          
+          // Legacy fields for backwards compatibility
+          reposContributed: repositories.length,
           topRepos: repositories.sort((a,b)=>b.stargazers_count-a.stargazers_count).slice(0,5).map(r=>({ name:r.name, stars:r.stargazers_count, forks:r.forks_count, language:r.language, url:r.html_url })),
-          activityFetchedAt: new Date().toISOString(),
-          recentPRs,
         };
       }
 
@@ -1124,6 +1415,92 @@
           }
         });
       }
+
+      // Tab switching functionality
+      function setupTabs() {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab + '-tab').classList.add('active');
+          });
+        });
+      }
+
+      // Display Pull Requests tab
+      function displayPRsTab(prs) {
+        const container = document.getElementById('prList');
+        if (!prs || !prs.length) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-code-branch"></i><p>No pull requests found</p></div>';
+          return;
+        }
+        
+        container.innerHTML = prs.map(pr => {
+          const badgeClass = pr.merged ? 'merged' : pr.state;
+          const badgeText = pr.merged ? 'Merged' : (pr.state === 'open' ? 'Open' : 'Closed');
+          const repoName = pr.repo || 'Unknown';
+          const date = new Date(pr.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          
+          return `
+            <div class="pr-item">
+              <div class="pr-header">
+                <div style="flex: 1;">
+                  <h4 class="pr-title">
+                    <a href="${pr.url}" target="_blank" rel="noopener noreferrer">
+                      #${pr.number} ${pr.title}
+                    </a>
+                  </h4>
+                  <div class="pr-meta">
+                    <span><i class="fas fa-code-branch"></i> ${repoName}</span>
+                    <span><i class="fas fa-calendar"></i> ${date}</span>
+                    <span><i class="fas fa-comment"></i> ${pr.comments || 0} comments</span>
+                    ${pr.merged_at ? `<span><i class="fas fa-check"></i> Merged ${new Date(pr.merged_at).toLocaleDateString()}</span>` : ''}
+                  </div>
+                </div>
+                <span class="pr-badge ${badgeClass}">${badgeText}</span>
+              </div>
+              ${pr.body && pr.body.trim() ? `<p class="pr-body">${pr.body.substring(0, 250)}${pr.body.length > 250 ? '...' : ''}</p>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Display Repositories tab
+      function displayReposTab(repos) {
+        const container = document.getElementById('reposList');
+        if (!repos || !repos.length) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-folder"></i><p>No repositories found</p></div>';
+          return;
+        }
+        
+        // Sort by stars and take top repos
+        const sortedRepos = [...repos].sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0));
+        
+        container.innerHTML = sortedRepos.slice(0, 50).map(repo => {
+          return `
+            <div class="repo-item">
+              <h4 class="repo-name">
+                <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer">
+                  <i class="fas fa-folder"></i> ${repo.name}
+                </a>
+              </h4>
+              ${repo.description ? `<p class="pr-body">${repo.description}</p>` : ''}
+              <div class="repo-stats">
+                <span><i class="fas fa-star"></i> ${repo.stargazers_count || 0} stars</span>
+                <span><i class="fas fa-code-branch"></i> ${repo.forks_count || 0} forks</span>
+                ${repo.language ? `<span><i class="fas fa-code"></i> ${repo.language}</span>` : ''}
+                <span><i class="fas fa-${repo.private ? 'lock' : 'globe'}"></i> ${repo.private ? 'Private' : 'Public'}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Initialize tabs on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        setupTabs();
+      });
     </script>
   </body>
 </html>
