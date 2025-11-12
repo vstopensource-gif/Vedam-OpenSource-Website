@@ -1109,3 +1109,145 @@ input[type="time"]:focus-visible {
     margin-left: 0.5rem;
 }
 
+/* Field Width Responsive Adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .field-width-4 {
+        width: 48%;
+        margin-right: 2%;
+    }
+    
+    .field-width-4:nth-child(3n) {
+        margin-right: 0;
+    }
+}
+
+/* Number Input Spinner Styling */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 2rem;
+    cursor: pointer;
+}
+
+input[type="number"]:hover::-webkit-inner-spin-button,
+input[type="number"]:hover::-webkit-outer-spin-button {
+    opacity: 1;
+}
+
+/* File Input Styling (if needed in future) */
+input[type="file"] {
+    width: 100%;
+    padding: 1rem;
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
+    background: #f9fafb;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+input[type="file"]:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+input[type="file"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+/* Enhanced Form Field Focus States */
+.form-field:has(.form-input:focus),
+.form-field:has(.form-textarea:focus),
+.form-field:has(.form-select:focus) {
+    transform: translateY(-2px);
+}
+
+/* Required Field Indicator Enhancement */
+.field-label:has(+ .form-input[required]),
+.field-label:has(+ .form-textarea[required]),
+.field-label:has(+ .form-select[required]) {
+    position: relative;
+}
+
+/* Better spacing for field groups */
+.checkbox-group + .form-field,
+.radio-group + .form-field {
+    margin-top: 2rem;
+}
+
+/* Enhanced multiselect option hover */
+.form-multiselect option {
+    padding: 0.5rem 0.75rem;
+}
+
+/* Better date/time input appearance on mobile */
+@media (max-width: 768px) {
+    input[type="date"],
+    input[type="time"] {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
+
+/* Form validation error styling */
+.form-input:invalid:not(:placeholder-shown):not(:focus) {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.form-input:invalid:not(:placeholder-shown):not(:focus) + .field-error {
+    display: block;
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+/* Success state for valid inputs */
+.form-input:valid:not(:placeholder-shown):not(:focus) {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.05);
+}
+
+/* Enhanced section transitions */
+.form-section {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stagger animation for form fields */
+.form-field:nth-child(1) { animation-delay: 0.1s; }
+.form-field:nth-child(2) { animation-delay: 0.2s; }
+.form-field:nth-child(3) { animation-delay: 0.3s; }
+.form-field:nth-child(4) { animation-delay: 0.4s; }
+.form-field:nth-child(5) { animation-delay: 0.5s; }
+
+/* Print styles */
+@media print {
+    .form-actions,
+    .btn-back,
+    .navbar {
+        display: none;
+    }
+    
+    .form-fill-container {
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    #dynamicForm {
+        box-shadow: none;
+        border: none;
+    }
+}
+
