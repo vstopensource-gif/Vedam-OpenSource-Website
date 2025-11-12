@@ -560,27 +560,68 @@ body {
     background: #ffd700;
     color: #333;
     border-color: #ffd700;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .btn-primary:hover {
-    background: transparent;
-    color: #ffd700;
-    border-color: #ffd700;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3);
+    background: #ffed4e;
+    color: #333;
+    border-color: #ffed4e;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(255, 215, 0, 0.4);
 }
 
 .btn-secondary {
     background: transparent;
     color: white;
     border-color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-secondary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-secondary:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .btn-secondary:hover {
     background: white;
-    color: #333;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(255, 255, 255, 0.3);
+    color: #667eea;
+    font-weight: 600;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(255, 255, 255, 0.4);
 }
 
 .hero-image {
