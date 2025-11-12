@@ -762,6 +762,14 @@ function setupConditionalLogicListeners() {
         input.addEventListener('change', updateConditionalFields);
         input.addEventListener('input', updateConditionalFields);
     });
+    
+    // Also listen to multiselect option clicks
+    document.querySelectorAll('.multiselect-option').forEach(option => {
+        option.addEventListener('click', function() {
+            // Small delay to ensure hidden input is updated
+            setTimeout(updateConditionalFields, 10);
+        });
+    });
 }
 
 // Multiselect Functions
