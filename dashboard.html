@@ -40,6 +40,12 @@
         doc,
         getDoc,
         setDoc,
+        collection,
+        query,
+        where,
+        orderBy,
+        getDocs,
+        Timestamp,
       } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
       import {
         ref,
@@ -59,6 +65,12 @@
       window.getDoc = getDoc;
       window.doc = doc;
       window.setDoc = setDoc;
+      window.collection = collection;
+      window.query = query;
+      window.where = where;
+      window.orderBy = orderBy;
+      window.getDocs = getDocs;
+      window.Timestamp = Timestamp;
       window.ref = ref;
       window.push = push;
       window.onValue = onValue;
@@ -1405,6 +1417,32 @@
                 </div>
               </div>
             </div>
+
+            <!-- Forms Section -->
+            <div class="dashboard-section" id="formsSection" style="margin-top: 3rem;">
+              <div class="section-header" style="margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                  <h2 style="font-size: 1.75rem; font-weight: 700; color: #1f2937; margin: 0;">
+                    <i class="fas fa-clipboard-list" style="color: #667eea; margin-right: 0.75rem;"></i> 
+                    Quick Actions & Forms
+                  </h2>
+          </div>
+                <p style="color: #6b7280; font-size: 1rem; margin: 0;">Complete forms and take action on important items</p>
+        </div>
+              
+              <div id="formsLoading" class="loading-state" style="text-align: center; padding: 3rem; color: #6b7280;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i> Loading forms...
+        </div>
+              
+              <div id="formsGrid" class="forms-grid" style="display: none;">
+                <!-- Cards populated by JavaScript -->
+              </div>
+              
+              <div id="formsEmpty" class="empty-state" style="display: none; text-align: center; padding: 3rem; color: #9ca3af;">
+                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.5;"></i>
+                <p style="font-size: 1.1rem;">No active forms available at the moment.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1432,6 +1470,7 @@
               if (user) {
                 // User is authenticated, load their data
                 await loadUserData();
+            await loadActiveForms();
                 await loadGitHubActivity();
               } else {
                 // No user, redirect to login
@@ -1595,6 +1634,205 @@
           }
         }
       }
+
+      // Forms functionality
+      async function loadActiveForms() {
+        try {
+          const user = window.auth?.currentUser;
+          if (!user) return;
+
+          const formsRef = window.collection(window.db, 'forms');
+          const now = new Date();
+          
+          const q = window.query(
+            formsRef,
+            window.where('status', '==', 'active'),
+            window.orderBy('createdAt', 'desc')
+          );
+          
+          const snapshot = await window.getDocs(q);
+          const forms = [];
+          
+          snapshot.forEach(doc => {
+            const form = { id: doc.id, ...doc.data() };
+            
+            // Filter by date if set
+            if (form.settings?.startDate) {
+              const startDate = form.settings.startDate.toDate ? form.settings.startDate.toDate() : new Date(form.settings.startDate);
+              if (startDate > now) return; // Not started yet
+            }
+            if (form.settings?.endDate) {
+              const endDate = form.settings.endDate.toDate ? form.settings.endDate.toDate() : new Date(form.settings.endDate);
+              if (endDate < now) return; // Already ended
+            }
+            
+            forms.push(form);
+          });
+          
+          // Load user submissions
+          const userSubmissions = await loadUserSubmissions(user.uid);
+          
+          // Render forms
+          renderFormCards(forms, userSubmissions);
+        } catch (error) {
+          console.error('Error loading forms:', error);
+          document.getElementById('formsLoading').style.display = 'none';
+          document.getElementById('formsEmpty').style.display = 'block';
+        }
+      }
+
+      async function loadUserSubmissions(userId) {
+        try {
+          const userSubRef = window.doc(window.db, 'user_form_submissions', userId);
+          const userSubSnap = await window.getDoc(userSubRef);
+          
+          if (userSubSnap.exists()) {
+            return userSubSnap.data().submissions || {};
+          }
+          return {};
+        } catch (error) {
+          console.error('Error loading user submissions:', error);
+          return {};
+        }
+      }
+
+      function renderFormCards(forms, userSubmissions) {
+        const formsGrid = document.getElementById('formsGrid');
+        const formsLoading = document.getElementById('formsLoading');
+        const formsEmpty = document.getElementById('formsEmpty');
+        
+        formsLoading.style.display = 'none';
+        
+        if (forms.length === 0) {
+          formsEmpty.style.display = 'block';
+          return;
+        }
+        
+        formsEmpty.style.display = 'none';
+        formsGrid.style.display = 'grid';
+        formsGrid.innerHTML = '';
+        
+        forms.forEach(form => {
+          const submission = userSubmissions[form.id] || null;
+          const card = createFormCard(form, submission);
+          formsGrid.appendChild(card);
+        });
+        
+        // Set up button listeners after rendering
+        setupFormButtonListeners();
+      }
+
+      function createFormCard(form, submission) {
+        const card = document.createElement('div');
+        card.className = 'form-card';
+        if (submission && !form.settings?.allowMultipleSubmissions) {
+          card.classList.add('submitted');
+        }
+        card.dataset.formId = form.id;
+        
+        const submittedCount = submission?.count || 0;
+        const canResubmit = form.settings?.allowMultipleSubmissions || false;
+        const hasSubmitted = submittedCount > 0;
+        
+        const endDate = form.settings?.endDate ? 
+          (form.settings.endDate.toDate ? form.settings.endDate.toDate() : new Date(form.settings.endDate)) : 
+          null;
+        const endDateStr = endDate ? endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+        
+        card.innerHTML = `
+          <div class="form-card-header">
+            <div class="form-icon">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            ${hasSubmitted ? `
+              <div class="form-status-badge submitted">
+                <i class="fas fa-check-circle"></i> ${submittedCount === 1 ? 'Submitted' : `Submitted ${submittedCount} times`}
+              </div>
+            ` : `
+              <div class="form-status-badge available">
+                <i class="fas fa-circle"></i> Available
+              </div>
+            `}
+          </div>
+          
+          <div class="form-card-body">
+            <h3>${form.name || 'Untitled Form'}</h3>
+            <p>${form.description || 'No description provided.'}</p>
+            
+            <div class="form-meta">
+              ${form.category ? `
+                <span class="form-category">
+                  <i class="fas fa-tag"></i> ${form.category}
+                </span>
+              ` : ''}
+              ${endDateStr ? `
+                <span class="form-deadline">
+                  <i class="fas fa-clock"></i> Ends ${endDateStr}
+                </span>
+              ` : ''}
+            </div>
+          </div>
+          
+          <div class="form-card-footer">
+            <button class="btn-fill-form" data-form-id="${form.id}" ${!canResubmit && hasSubmitted ? 'disabled' : ''}>
+              <i class="fas fa-edit"></i> Fill Form
+            </button>
+            ${hasSubmitted ? `
+              <button class="btn-view-history" data-form-id="${form.id}" data-form-name="${form.name || 'Form'}">
+                <i class="fas fa-history"></i> View History
+              </button>
+            ` : ''}
+          </div>
+        `;
+        
+        return card;
+      }
+
+      function openForm(formId) {
+        if (!formId) {
+          console.error('No form ID provided');
+          return;
+        }
+        window.location.href = `form-fill.html?formId=${formId}`;
+      }
+
+      function viewSubmissionHistory(formId, formName) {
+        if (!formId) {
+          console.error('No form ID provided');
+          return;
+        }
+        window.location.href = `form-fill.html?formId=${formId}&viewHistory=true&formName=${encodeURIComponent(formName)}`;
+      }
+
+      // Set up event listeners for form buttons after rendering
+      function setupFormButtonListeners() {
+        document.querySelectorAll('.btn-fill-form').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const formId = this.dataset.formId || this.getAttribute('data-form-id');
+            if (formId && !this.disabled) {
+              openForm(formId);
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-view-history').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const formId = this.dataset.formId || this.getAttribute('data-form-id');
+            const formName = this.dataset.formName || this.getAttribute('data-form-name') || 'Form';
+            if (formId) {
+              viewSubmissionHistory(formId, formName);
+            }
+          });
+        });
+      }
+
+      // Make functions globally available
+      window.openForm = openForm;
+      window.viewSubmissionHistory = viewSubmissionHistory;
 
       // Navigation functionality
       function showSection(sectionName) {
@@ -2024,8 +2262,8 @@
       async function fetchAndSaveGitHubActivity(userId, accessToken) {
         try {
           const headers = {
-            Authorization: `token ${accessToken}`,
-            Accept: "application/vnd.github.v3+json",
+                Authorization: `token ${accessToken}`,
+                Accept: "application/vnd.github.v3+json",
           };
 
           // Fetch user info (followers, following, etc.)
@@ -2045,12 +2283,12 @@
             const reposResponse = await fetch(
               `https://api.github.com/user/repos?per_page=100&page=${page}&sort=updated`,
               { headers }
-            );
-            
-            if (!reposResponse.ok) {
-              throw new Error(`GitHub API error: ${reposResponse.status}`);
-            }
-            
+          );
+
+          if (!reposResponse.ok) {
+            throw new Error(`GitHub API error: ${reposResponse.status}`);
+          }
+
             const pageRepos = await reposResponse.json();
             repositories = repositories.concat(pageRepos);
             hasMore = pageRepos.length === 100;
@@ -2152,7 +2390,7 @@
                 contributions = contributionCalendar.totalContributions || 0;
                 console.log(`Total contributions (lifetime via GraphQL): ${contributions}`);
               }
-            } else {
+              } else {
               console.warn('GraphQL API failed:', graphqlResponse.status);
             }
           } catch (graphqlError) {
@@ -2207,7 +2445,7 @@
             (sum, repo) => sum + repo.forks_count,
             0
           );
-          
+
           // Aggregate languages across ALL repos
           const languagesMap = {};
           const languagePromises = repositories.slice(0, 100).map(async (repo) => {
