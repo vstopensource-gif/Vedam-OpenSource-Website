@@ -683,3 +683,355 @@ function renderHidden(field, value) {
     return `<input type="hidden" id="${field.id}" name="${field.id}" value="${value}" />`;
 }
 
+// Conditional Logic Functions
+function setupConditionalLogicListeners() {
+    document.querySelectorAll('.form-field input, .form-field select, .form-field textarea').forEach(input => {
+        input.addEventListener('change', updateConditionalFields);
+        input.addEventListener('input', updateConditionalFields);
+    });
+}
+
+function updateConditionalFields() {
+    if (!currentFormData || !currentFormData.fields) return;
+    
+    currentFormData.fields.forEach(field => {
+        const fieldElement = document.querySelector(`[data-field-id="${field.id}"]`);
+        if (!fieldElement) return;
+        
+        if (field.conditionalLogic?.enabled) {
+            const shouldShow = evaluateConditionalLogic(field);
+            fieldElement.style.display = shouldShow ? 'block' : 'none';
+        }
+    });
+}
+
+function evaluateConditionalLogic(field) {
+    if (!field.conditionalLogic?.enabled || !field.conditionalLogic.conditions) {
+        return true;
+    }
+    
+    const conditions = field.conditionalLogic.conditions;
+    return conditions.every(condition => {
+        const targetFieldElement = document.querySelector(`[data-field-id="${condition.fieldId}"]`);
+        if (!targetFieldElement) return true;
+        
+        const targetValue = getFieldValue(targetFieldElement);
+        
+        switch(condition.operator) {
+            case 'equals':
+                return targetValue === condition.value;
+            case 'not_equals':
+                return targetValue !== condition.value;
+            case 'contains':
+                if (Array.isArray(targetValue)) {
+                    return targetValue.includes(condition.value);
+                }
+                return String(targetValue).includes(condition.value);
+            default:
+                return true;
+        }
+    });
+}
+
+function getFieldValue(fieldElement) {
+    // Check for checkbox group (multiple checkboxes with same name)
+    const checkboxes = fieldElement.querySelectorAll('input[type="checkbox"]');
+    if (checkboxes.length > 0) {
+        const checked = Array.from(checkboxes).filter(cb => cb.checked);
+        return checked.length > 0 ? checked.map(cb => cb.value) : '';
+    }
+    
+    // Check for radio group
+    const radios = fieldElement.querySelectorAll('input[type="radio"]');
+    if (radios.length > 0) {
+        const checked = Array.from(radios).find(r => r.checked);
+        return checked ? checked.value : '';
+    }
+    
+    // Regular input, select, or textarea
+    const input = fieldElement.querySelector('input, select, textarea');
+    if (!input) return '';
+    
+    if (input.multiple) {
+        return Array.from(input.selectedOptions).map(opt => opt.value);
+    } else {
+        return input.value || '';
+    }
+}
+
+// Form Validation
+function validateForm() {
+    const form = document.getElementById('dynamicForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return false;
+    }
+    
+    // Additional custom validation
+    const fields = currentFormData.fields || [];
+    for (let field of fields) {
+        const fieldElement = document.querySelector(`[data-field-id="${field.id}"]`);
+        if (!fieldElement || fieldElement.style.display === 'none') continue;
+        
+        const input = fieldElement.querySelector('input, select, textarea');
+        if (!input) continue;
+        
+        if (field.required && !input.value && !input.checked) {
+            input.focus();
+            input.reportValidity();
+            return false;
+        }
+        
+        // Custom validation rules
+        if (field.validation) {
+            const value = getFieldValue(fieldElement);
+            
+            if (field.validation.minLength && value.length < field.validation.minLength) {
+                alert(`${field.label || 'Field'} must be at least ${field.validation.minLength} characters.`);
+                input.focus();
+                return false;
+            }
+            
+            if (field.validation.maxLength && value.length > field.validation.maxLength) {
+                alert(`${field.label || 'Field'} must be at most ${field.validation.maxLength} characters.`);
+                input.focus();
+                return false;
+            }
+            
+            if (field.validation.min !== null && field.validation.min !== undefined && parseFloat(value) < field.validation.min) {
+                alert(`${field.label || 'Field'} must be at least ${field.validation.min}.`);
+                input.focus();
+                return false;
+            }
+            
+            if (field.validation.max !== null && field.validation.max !== undefined && parseFloat(value) > field.validation.max) {
+                alert(`${field.label || 'Field'} must be at most ${field.validation.max}.`);
+                input.focus();
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}
+
+// Form Submission
+async function handleFormSubmit(event) {
+    event.preventDefault();
+    
+    if (!validateForm()) {
+        return;
+    }
+    
+    try {
+        // Collect form data
+        const formData = {};
+        const fields = currentFormData.fields || [];
+        
+        fields.forEach(field => {
+            const fieldElement = document.querySelector(`[data-field-id="${field.id}"]`);
+            if (!fieldElement) return;
+            
+            const value = getFieldValue(fieldElement);
+            if (value !== '' && value !== null && value !== undefined) {
+                formData[field.id] = value;
+            }
+        });
+        
+        // Calculate completion time
+        const completionTime = formStartTime ? Math.floor((Date.now() - formStartTime) / 1000) : 0;
+        
+        // Get user info
+        const userInfo = {
+            name: userData?.name || currentUser.displayName || '',
+            email: userData?.email || currentUser.email || '',
+            githubUsername: userData?.githubUsername || '',
+            photoURL: currentUser.photoURL || null
+        };
+        
+        // Save submission
+        const submissionId = await saveSubmission(formData, userInfo, completionTime);
+        
+        // Update user tracking
+        await updateUserSubmissionTracking(submissionId);
+        
+        // Show success and redirect
+        showSuccessMessage();
+        
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        alert('Failed to submit form. Please try again.');
+    }
+}
+
+// Save submission to Firebase
+async function saveSubmission(formData, userInfo, completionTime) {
+    const submissionsRef = window.collection(window.db, 'form_submissions', currentFormId, 'submissions');
+    const newSubmissionRef = window.doc(submissionsRef);
+    
+    const submissionData = {
+        submittedAt: window.Timestamp.now(),
+        submittedBy: currentUser.email || null,
+        userId: currentUser.uid,
+        userInfo: userInfo,
+        data: formData,
+        completionTime: completionTime
+    };
+    
+    await window.setDoc(newSubmissionRef, submissionData);
+    return newSubmissionRef.id;
+}
+
+// Update user submission tracking
+async function updateUserSubmissionTracking(submissionId) {
+    try {
+        const userSubRef = window.doc(window.db, 'user_form_submissions', currentUser.uid);
+        const userSubSnap = await window.getDoc(userSubRef);
+        
+        const existingData = userSubSnap.exists() ? userSubSnap.data() : { submissions: {} };
+        const submissions = existingData.submissions || {};
+        
+        const formSubmission = submissions[currentFormId] || {
+            count: 0,
+            submissionIds: [],
+            formName: currentFormData.name,
+            canResubmit: currentFormData.settings?.allowMultipleSubmissions || false
+        };
+        
+        formSubmission.count = (formSubmission.count || 0) + 1;
+        formSubmission.lastSubmittedAt = window.Timestamp.now();
+        formSubmission.submissionIds = [...(formSubmission.submissionIds || []), submissionId];
+        
+        submissions[currentFormId] = formSubmission;
+        
+        await window.setDoc(userSubRef, {
+            submissions: submissions,
+            lastUpdated: window.Timestamp.now()
+        }, { merge: true });
+        
+    } catch (error) {
+        console.error('Error updating user submission tracking:', error);
+    }
+}
+
+// Show success message
+function showSuccessMessage() {
+    document.getElementById('dynamicForm').style.display = 'none';
+    document.getElementById('formHeader').style.display = 'none';
+    
+    const confirmationText = currentFormData.settings?.confirmationMessage || 'Thank you for your submission!';
+    document.getElementById('confirmationText').textContent = confirmationText;
+    document.getElementById('successMessage').style.display = 'flex';
+}
+
+// Handle success redirect
+function handleSuccessRedirect() {
+    const redirectType = currentFormData.settings?.redirectType || 'dashboard';
+    
+    switch(redirectType) {
+        case 'same-page':
+            // Already showing success message, just reload form
+            window.location.reload();
+            break;
+        case 'dashboard':
+            window.location.href = 'dashboard.html';
+            break;
+        case 'custom':
+            const redirectUrl = currentFormData.settings?.redirectUrl || 'dashboard.html';
+            window.location.href = redirectUrl;
+            break;
+        default:
+            window.location.href = 'dashboard.html';
+    }
+}
+
+// Show submission history
+async function showSubmissionHistory(formId, formName) {
+    try {
+        showLoading();
+        
+        currentFormId = formId;
+        
+        const submissionsRef = window.collection(window.db, 'form_submissions', formId, 'submissions');
+        const q = window.query(submissionsRef, window.where('userId', '==', currentUser.uid), window.orderBy('submittedAt', 'desc'));
+        const snapshot = await window.getDocs(q);
+        
+        const submissions = [];
+        snapshot.forEach(doc => {
+            submissions.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        hideLoading();
+        
+        // Show history view
+        document.getElementById('formHeader').style.display = 'none';
+        document.getElementById('dynamicForm').style.display = 'none';
+        document.getElementById('historyView').style.display = 'block';
+        
+        document.getElementById('historyTitle').textContent = `Submission History: ${formName || 'Form'}`;
+        
+        const historyList = document.getElementById('historyList');
+        if (submissions.length === 0) {
+            historyList.innerHTML = `
+                <div class="empty-history">
+                    <i class="fas fa-inbox"></i>
+                    <p>No submissions found.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Load form data to display field labels
+        const formRef = window.doc(window.db, 'forms', formId);
+        const formSnap = await window.getDoc(formRef);
+        const formData = formSnap.exists() ? formSnap.data() : null;
+        
+        historyList.innerHTML = submissions.map((submission, index) => {
+            const submittedDate = submission.submittedAt?.toDate ? submission.submittedAt.toDate() : new Date(submission.submittedAt);
+            const dateStr = submittedDate.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const dataHTML = Object.entries(submission.data || {}).map(([fieldId, value]) => {
+                const field = formData?.fields?.find(f => f.id === fieldId);
+                const fieldLabel = field?.label || fieldId;
+                const displayValue = Array.isArray(value) ? value.join(', ') : value;
+                
+                return `
+                    <div class="history-field">
+                        <strong>${fieldLabel}:</strong>
+                        <span>${displayValue || '(empty)'}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            return `
+                <div class="history-item">
+                    <div class="history-header">
+                        <span class="history-date">
+                            <i class="fas fa-calendar"></i> ${dateStr}
+                        </span>
+                        <span class="history-time">
+                            <i class="fas fa-clock"></i> Completed in ${submission.completionTime || 0} seconds
+                        </span>
+                    </div>
+                    <div class="history-data">
+                        ${dataHTML}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Error loading submission history:', error);
+        showError('Failed to load submission history.');
+    }
+}
+
