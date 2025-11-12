@@ -1420,12 +1420,15 @@
 
             <!-- Forms Section -->
             <div class="dashboard-section" id="formsSection" style="margin-top: 3rem;">
-              <div class="section-header" style="margin-bottom: 1.5rem;">
-                <h2 style="font-size: 1.75rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">
-                  <i class="fas fa-file-alt" style="color: #667eea; margin-right: 0.5rem;"></i> Available Forms
-                </h2>
-                <p style="color: #6b7280; font-size: 0.95rem;">Fill out forms created by administrators</p>
+              <div class="section-header" style="margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                  <h2 style="font-size: 1.75rem; font-weight: 700; color: #1f2937; margin: 0;">
+                    <i class="fas fa-clipboard-list" style="color: #667eea; margin-right: 0.75rem;"></i> 
+                    Quick Actions & Forms
+                  </h2>
           </div>
+                <p style="color: #6b7280; font-size: 1rem; margin: 0;">Complete forms and take action on important items</p>
+        </div>
               
               <div id="formsLoading" class="loading-state" style="text-align: center; padding: 3rem; color: #6b7280;">
                 <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i> Loading forms...
@@ -1714,6 +1717,9 @@
           const card = createFormCard(form, submission);
           formsGrid.appendChild(card);
         });
+        
+        // Set up button listeners after rendering
+        setupFormButtonListeners();
       }
 
       function createFormCard(form, submission) {
@@ -1768,11 +1774,11 @@
           </div>
           
           <div class="form-card-footer">
-            <button class="btn-fill-form" onclick="openForm('${form.id}')" ${!canResubmit && hasSubmitted ? 'disabled' : ''}>
+            <button class="btn-fill-form" data-form-id="${form.id}" ${!canResubmit && hasSubmitted ? 'disabled' : ''}>
               <i class="fas fa-edit"></i> Fill Form
             </button>
             ${hasSubmitted ? `
-              <button class="btn-view-history" onclick="viewSubmissionHistory('${form.id}', '${form.name || 'Form'}')">
+              <button class="btn-view-history" data-form-id="${form.id}" data-form-name="${form.name || 'Form'}">
                 <i class="fas fa-history"></i> View History
               </button>
             ` : ''}
@@ -1783,11 +1789,45 @@
       }
 
       function openForm(formId) {
+        if (!formId) {
+          console.error('No form ID provided');
+          return;
+        }
         window.location.href = `form-fill.html?formId=${formId}`;
       }
 
       function viewSubmissionHistory(formId, formName) {
+        if (!formId) {
+          console.error('No form ID provided');
+          return;
+        }
         window.location.href = `form-fill.html?formId=${formId}&viewHistory=true&formName=${encodeURIComponent(formName)}`;
+      }
+
+      // Set up event listeners for form buttons after rendering
+      function setupFormButtonListeners() {
+        document.querySelectorAll('.btn-fill-form').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const formId = this.dataset.formId || this.getAttribute('data-form-id');
+            if (formId && !this.disabled) {
+              openForm(formId);
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-view-history').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const formId = this.dataset.formId || this.getAttribute('data-form-id');
+            const formName = this.dataset.formName || this.getAttribute('data-form-name') || 'Form';
+            if (formId) {
+              viewSubmissionHistory(formId, formName);
+            }
+          });
+        });
       }
 
       // Make functions globally available
