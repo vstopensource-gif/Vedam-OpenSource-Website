@@ -412,6 +412,17 @@ function renderField(field) {
         }
     }
     
+    // Initialize multiselect count if it's a multiselect field
+    if (field.type === 'multiselect') {
+        const select = fieldDiv.querySelector('.form-multiselect');
+        if (select) {
+            // Use setTimeout to ensure DOM is ready
+            setTimeout(() => {
+                updateMultiselectCount(select);
+            }, 0);
+        }
+    }
+    
     return fieldDiv;
 }
 
