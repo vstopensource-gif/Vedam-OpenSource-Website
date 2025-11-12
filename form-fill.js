@@ -43,35 +43,53 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
-    // Wait for auth state
-    window.onAuthStateChanged(window.auth, async function(user) {
-        if (!user) {
-            window.location.href = 'login.html';
-            return;
-        }
+    // Check if user is already authenticated (avoid waiting for onAuthStateChanged)
+    let user = window.auth.currentUser;
+    
+    // If not authenticated, wait for auth state change
+    if (!user) {
+        // Use a promise to wait for auth state
+        user = await new Promise((resolve) => {
+            const unsubscribe = window.onAuthStateChanged(window.auth, (authUser) => {
+                unsubscribe(); // Unsubscribe after first call
+                resolve(authUser);
+            });
+            
+            // Timeout after 3 seconds
+            setTimeout(() => {
+                unsubscribe();
+                resolve(null);
+            }, 3000);
+        });
+    }
 
-        currentUser = user;
-        await loadUserData(user.uid);
-        
-        // Get formId from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const formId = urlParams.get('formId');
-        const viewHistory = urlParams.get('viewHistory') === 'true';
-        const formName = urlParams.get('formName');
+    if (!user) {
+        console.log('No authenticated user found, redirecting to login');
+        window.location.href = 'login.html';
+        return;
+    }
 
-        if (!formId) {
-            showError('No form ID provided');
-            return;
-        }
+    currentUser = user;
+    await loadUserData(user.uid);
+    
+    // Get formId from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const formId = urlParams.get('formId');
+    const viewHistory = urlParams.get('viewHistory') === 'true';
+    const formName = urlParams.get('formName');
 
-        currentFormId = formId;
+    if (!formId) {
+        showError('No form ID provided');
+        return;
+    }
 
-        if (viewHistory) {
-            await showSubmissionHistory(formId, formName);
-        } else {
-            await loadFormFromFirebase(formId);
-        }
-    });
+    currentFormId = formId;
+
+    if (viewHistory) {
+        await showSubmissionHistory(formId, formName);
+    } else {
+        await loadFormFromFirebase(formId);
+    }
 });
 
 // Load user data from Firestore
