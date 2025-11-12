@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GitHub Activity - Vedam Open Source Club</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%23667eea'/><stop offset='100%25' style='stop-color:%23764ba2'/></linearGradient></defs><rect width='100' height='100' rx='20' fill='url(%23g)'/><text x='50' y='70' font-size='60' font-weight='bold' fill='white' text-anchor='middle' font-family='Arial'>V</text></svg>">
     <link rel="stylesheet" href="styles.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
@@ -420,21 +421,274 @@
         .half-grid { grid-template-columns: 1fr; }
       }
 
-      /* Contribution heatmap (CSS grid like GitHub) */
+      /* Contribution heatmap (CSS grid like GitHub) - Enhanced */
       .heatmap-grid {
         display: grid;
         grid-auto-flow: column;
-        grid-template-rows: repeat(7, 12px);
-        grid-auto-columns: 12px;
-        gap: 3px;
-        padding: 0.5rem;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
+        grid-template-rows: repeat(7, 14px);
+        grid-auto-columns: 14px;
+        gap: 4px;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc, #ffffff);
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
         overflow: auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        max-width: 100%;
       }
+      
       .heatmap-cell {
-        width: 12px; height: 12px; border-radius: 2px; background: #e5e7eb;
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        background: #ebedf0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 1px solid transparent;
+      }
+      
+      .heatmap-cell:hover {
+        transform: scale(1.3);
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        z-index: 10;
+      }
+      
+      .heatmap-legend {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+      
+      .heatmap-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+      
+      .heatmap-legend-box {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+      }
+
+      /* Tabs Section */
+      .details-section {
+        margin-top: 2rem;
+      }
+      
+      .tabs-container {
+        display: flex;
+        gap: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+        margin-bottom: 2rem;
+      }
+      
+      .tab-btn {
+        background: none;
+        border: none;
+        padding: 1rem 2rem;
+        cursor: pointer;
+        font-weight: 600;
+        color: #666;
+        transition: all 0.3s;
+        border-bottom: 3px solid transparent;
+        font-size: 1rem;
+      }
+      
+      .tab-btn:hover {
+        color: #667eea;
+      }
+      
+      .tab-btn.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+      }
+      
+      .tab-content {
+        display: none;
+      }
+      
+      .tab-content.active {
+        display: block;
+      }
+      
+      .pr-item, .commit-item, .repo-item {
+        background: white;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+      }
+      
+      .pr-item:hover, .commit-item:hover, .repo-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+      
+      .pr-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 0.75rem;
+      }
+      
+      .pr-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+      }
+      
+      .pr-title a {
+        color: #333;
+        text-decoration: none;
+      }
+      
+      .pr-title a:hover {
+        color: #667eea;
+      }
+      
+      .pr-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        font-size: 0.9rem;
+        color: #666;
+      }
+      
+      .pr-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+      
+      .pr-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      
+      .pr-badge.open {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      
+      .pr-badge.merged {
+        background: #ddd6fe;
+        color: #5b21b6;
+      }
+      
+      .pr-badge.closed {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      
+      .pr-body {
+        color: #666;
+        line-height: 1.6;
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+      }
+      
+      .repo-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+      }
+      
+      .repo-name a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      
+      .repo-name a:hover {
+        text-decoration: underline;
+      }
+      
+      .repo-stats {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+        color: #666;
+      }
+      
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+        font-size: 1.1rem;
+      }
+      
+      .empty-state i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 1rem;
+      }
+
+      /* PR Status Table */
+      .pr-status-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+      
+      .pr-status-table th {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      
+      .pr-status-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.95rem;
+      }
+      
+      .pr-status-table tbody tr:hover {
+        background: #f9fafb;
+        transition: background 0.2s ease;
+      }
+      
+      .pr-status-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+      
+      .pr-status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+      }
+      
+      .pr-status-indicator i {
+        font-size: 0.7rem;
+      }
+      
+      .pr-progress-bar {
+        flex: 1;
+        background: #e5e7eb;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      
+      .pr-progress-fill {
+        height: 100%;
+        transition: width 0.6s ease;
       }
 
       .dashboard-card {
@@ -725,14 +979,89 @@
 
           <!-- PRs Trend Graph (100%) -->
           <div class="chart-container">
-            <h3>PRs Trend</h3>
+            <h3>
+              <i class="fas fa-chart-line"></i> Pull Requests Activity (Last 30 Days)
+            </h3>
+            <p style="color: #6b7280; font-size: 0.9rem; margin-top: 0.5rem; margin-bottom: 1rem;">
+              Daily breakdown of PR activity by status
+            </p>
             <canvas id="recentPrsTimeline"></canvas>
           </div>
 
+          <!-- PR Status Breakdown Table -->
+          <div class="chart-container">
+            <h3>Pull Request Status Breakdown</h3>
+            <table class="pr-status-table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Count</th>
+                  <th>Percentage</th>
+                </tr>
+              </thead>
+              <tbody id="prStatusTableBody">
+                <tr>
+                  <td colspan="3" style="text-align: center;">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <!-- Contribution Heatmap (centered) -->
-          <div class="chart-container" id="heatmapContainer" style="display:none; text-align:center;">
-            <h3>Contribution Calendar (Last 12 Months)</h3>
+          <div class="chart-container" id="heatmapContainer" style="display:none;">
+            <h3 style="margin-bottom: 1.5rem;">
+              <i class="fas fa-calendar-alt"></i> Contribution Calendar (Last 12 Months)
+            </h3>
             <div id="heatmapPlaceholder" class="heatmap-grid" style="margin: 0 auto;"></div>
+            <div class="heatmap-legend">
+              <span style="margin-right: 0.5rem;">Less</span>
+              <div class="heatmap-legend-item">
+                <div class="heatmap-legend-box" style="background: #ebedf0;"></div>
+              </div>
+              <div class="heatmap-legend-item">
+                <div class="heatmap-legend-box" style="background: #c6e48b;"></div>
+              </div>
+              <div class="heatmap-legend-item">
+                <div class="heatmap-legend-box" style="background: #7bc96f;"></div>
+              </div>
+              <div class="heatmap-legend-item">
+                <div class="heatmap-legend-box" style="background: #239a3b;"></div>
+              </div>
+              <div class="heatmap-legend-item">
+                <div class="heatmap-legend-box" style="background: #196127;"></div>
+              </div>
+              <span style="margin-left: 0.5rem;">More</span>
+            </div>
+          </div>
+
+          <!-- Tabbed Details Section -->
+          <div class="details-section">
+            <div class="tabs-container">
+              <button class="tab-btn active" data-tab="prs">
+                <i class="fas fa-code-branch"></i> Pull Requests
+              </button>
+              <button class="tab-btn" data-tab="repos">
+                <i class="fas fa-folder"></i> Repositories
+              </button>
+            </div>
+            
+            <div class="tab-content active" id="prs-tab">
+              <div class="pr-list" id="prList">
+                <div class="empty-state">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>Loading pull requests...</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="tab-content" id="repos-tab">
+              <div class="repos-list" id="reposList">
+                <div class="empty-state">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>Loading repositories...</p>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -749,10 +1078,19 @@
         try {
           const cacheKey = `githubActivityCache:${uid}`;
           const cached = localStorage.getItem(cacheKey);
+          const reposCacheKey = `githubReposCache:${uid}`;
+          const cachedRepos = localStorage.getItem(reposCacheKey);
+          
           if (cached) {
             const activity = JSON.parse(cached);
             displayActivity(activity);
             createCharts(activity);
+            
+            // Load cached repos if available
+            if (cachedRepos) {
+              window.cachedRepos = JSON.parse(cachedRepos);
+              displayReposTab(window.cachedRepos);
+            }
             return;
           }
           // No cache: prompt user to refresh to fetch data
@@ -766,9 +1104,20 @@
       }
 
       function displayActivity(activity) {
+        // Debug: Log activity data to verify commits are present
+        console.log('Displaying activity data:', {
+          commits: activity.commits,
+          contributions: activity.contributions,
+          pullRequests: activity.pullRequests,
+          totalStars: activity.totalStars
+        });
+        
         // Overview Cards per Data_Visualization_Strategy.md
         const overview = document.getElementById('overviewCards');
         const totalRepos = (activity.publicRepos || 0) + (activity.privateRepos || 0) || (activity.reposContributed || 0);
+        const commitsValue = activity.commits || 0;
+        console.log('Commits value for display:', commitsValue);
+        
         const primaryCards = [
           { label: 'Total Repositories', value: totalRepos, icon: 'fas fa-folder' },
           { label: 'Total Stars', value: activity.totalStars || 0, icon: 'fas fa-star' },
@@ -776,7 +1125,7 @@
           { label: 'Total Pull Requests', value: activity.pullRequests || 0, icon: 'fas fa-code-branch' },
         ];
         const secondaryCards = [
-          { label: 'Total Commits', value: activity.commits || 0, icon: 'fas fa-laptop-code' },
+          { label: 'Total Commits', value: commitsValue, icon: 'fas fa-laptop-code' },
           { label: 'Total Forks', value: activity.totalForks || 0, icon: 'fas fa-code-branch' },
           { label: 'Total Issues', value: activity.issues || 0, icon: 'fas fa-bug' },
           { label: 'Followers', value: activity.followers || 0, icon: 'fas fa-user-friends' },
@@ -796,6 +1145,19 @@
         } else {
           heatmap.style.display = 'none';
         }
+
+        // Populate tabs with data
+        if (activity.recentPRs) {
+          displayPRsTab(activity.recentPRs);
+        }
+        
+        // Get repos from cache or activity data
+        if (window.cachedRepos) {
+          displayReposTab(window.cachedRepos);
+        }
+        
+        // Populate PR status table
+        displayPRStatusTable(activity);
       }
 
       function createCharts(activity) {
@@ -929,32 +1291,152 @@
           });
         }
 
-        // PRs Trend (weekly) if available
+        // PRs Trend (daily for last 30 days) - Enhanced visualization
         if (recentPrsCtx && Array.isArray(activity.recentPRs) && activity.recentPRs.length) {
           const prWrapper = recentPrsCtx.closest('.chart-container');
           if (prWrapper) { prWrapper.style.display = 'block'; }
-          const byWeek = {};
-          const toWeekKey = (iso) => {
-            if (!iso) return '';
-            const dt = new Date(iso);
-            const d = new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()));
-            const day = d.getUTCDay();
-            const diff = (day === 0 ? 0 : day); // start weeks on Sunday
-            const weekStart = new Date(d);
-            weekStart.setUTCDate(d.getUTCDate() - diff);
-            return weekStart.toISOString().slice(0,10);
-          };
+          
+          // Get last 30 days of data
+          const today = new Date();
+          const thirtyDaysAgo = new Date(today);
+          thirtyDaysAgo.setDate(today.getDate() - 30);
+          
+          // Create array of last 30 days
+          const dailyData = {};
+          for (let i = 0; i < 30; i++) {
+            const date = new Date(thirtyDaysAgo);
+            date.setDate(thirtyDaysAgo.getDate() + i);
+            const dateKey = date.toISOString().slice(0, 10);
+            dailyData[dateKey] = { open: 0, merged: 0, closed: 0, total: 0 };
+          }
+          
+          // Aggregate PRs by day and status
           activity.recentPRs.forEach(pr => {
-            const key = toWeekKey(pr.created_at || pr.createdAt);
-            if (!key) return;
-            byWeek[key] = (byWeek[key] || 0) + 1;
+            if (!pr.created_at) return;
+            const dateKey = pr.created_at.slice(0, 10);
+            if (dailyData[dateKey]) {
+              dailyData[dateKey].total += 1;
+              if (pr.merged) {
+                dailyData[dateKey].merged += 1;
+              } else if (pr.state === 'open') {
+                dailyData[dateKey].open += 1;
+              } else if (pr.state === 'closed') {
+                dailyData[dateKey].closed += 1;
+              }
+            }
           });
-          const labels = Object.keys(byWeek).sort().slice(-26); // last ~6 months (26 weeks)
-          const values = labels.map(k => byWeek[k]);
+          
+          // Prepare chart data
+          const sortedDates = Object.keys(dailyData).sort();
+          const labels = sortedDates.map(date => {
+            const d = new Date(date);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          });
+          const totalValues = sortedDates.map(date => dailyData[date].total);
+          const openValues = sortedDates.map(date => dailyData[date].open);
+          const mergedValues = sortedDates.map(date => dailyData[date].merged);
+          const closedValues = sortedDates.map(date => dailyData[date].closed);
+          
           recentPrsChart = new Chart(recentPrsCtx, {
-            type: 'line',
-            data: { labels, datasets: [{ label: 'PRs per week', data: values, fill: true, tension: 0.3, borderColor: 'rgba(99,102,241,1)', backgroundColor: 'rgba(99,102,241,0.2)' }] },
-            options: { responsive: true, maintainAspectRatio: true }
+            type: 'bar',
+            data: {
+              labels,
+              datasets: [
+                {
+                  label: 'Merged PRs',
+                  data: mergedValues,
+                  backgroundColor: 'rgba(139, 92, 246, 0.8)',
+                  borderColor: 'rgba(139, 92, 246, 1)',
+                  borderWidth: 2,
+                  borderRadius: 6,
+                },
+                {
+                  label: 'Open PRs',
+                  data: openValues,
+                  backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                  borderColor: 'rgba(16, 185, 129, 1)',
+                  borderWidth: 2,
+                  borderRadius: 6,
+                },
+                {
+                  label: 'Closed PRs',
+                  data: closedValues,
+                  backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                  borderColor: 'rgba(239, 68, 68, 1)',
+                  borderWidth: 2,
+                  borderRadius: 6,
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              interaction: {
+                mode: 'index',
+                intersect: false,
+              },
+              scales: {
+                x: {
+                  stacked: true,
+                  grid: {
+                    display: false
+                  },
+                  ticks: {
+                    font: {
+                      size: 11
+                    },
+                    maxRotation: 45,
+                    minRotation: 45
+                  }
+                },
+                y: {
+                  stacked: true,
+                  beginAtZero: true,
+                  ticks: {
+                    stepSize: 1
+                  },
+                  grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                  }
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  labels: {
+                    usePointStyle: true,
+                    padding: 15,
+                    font: {
+                      size: 13,
+                      weight: 600
+                    }
+                  }
+                },
+                tooltip: {
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  padding: 12,
+                  titleFont: {
+                    size: 14,
+                    weight: 'bold'
+                  },
+                  bodyFont: {
+                    size: 13
+                  },
+                  borderColor: 'rgba(102, 126, 234, 0.5)',
+                  borderWidth: 1,
+                  callbacks: {
+                    label: function(context) {
+                      return `${context.dataset.label}: ${context.parsed.y}`;
+                    },
+                    afterBody: function(tooltipItems) {
+                      const total = tooltipItems.reduce((sum, item) => sum + item.parsed.y, 0);
+                      return `Total: ${total} PR${total !== 1 ? 's' : ''}`;
+                    }
+                  }
+                }
+              }
+            }
           });
         } else if (recentPrsCtx) {
           // Hide empty chart area if no trend data yet
@@ -979,6 +1461,28 @@
           if (!token) throw new Error('GitHub not connected');
 
           const activity = await fetchGithubActivityData(token);
+          
+          // Fetch full repos list for the repos tab
+          const headers = { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' };
+          let allRepos = [];
+          let page = 1;
+          let hasMore = true;
+          
+          while (hasMore && page <= 10) { // Limit to 10 pages (1000 repos) for performance
+            const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&page=${page}&sort=updated`, { headers });
+            if (reposRes.ok) {
+              const pageRepos = await reposRes.json();
+              allRepos = allRepos.concat(pageRepos);
+              hasMore = pageRepos.length === 100;
+              page++;
+            } else {
+              break;
+            }
+          }
+          
+          // Store repos in global cache for tabs
+          window.cachedRepos = allRepos;
+          
           // Save to Firebase (structure kept same as existing usage)
           await window.setDoc(window.doc(window.db, 'Members', user.uid), {
             githubActivity: activity,
@@ -988,8 +1492,22 @@
           // Cache locally and render
           const cacheKey = `githubActivityCache:${user.uid}`;
           localStorage.setItem(cacheKey, JSON.stringify(activity));
+          const reposCacheKey = `githubReposCache:${user.uid}`;
+          localStorage.setItem(reposCacheKey, JSON.stringify(allRepos));
+          
           displayActivity(activity);
           createCharts(activity);
+          
+          // Populate tabs
+          if (activity.recentPRs) {
+            displayPRsTab(activity.recentPRs);
+          }
+          if (allRepos.length > 0) {
+            displayReposTab(allRepos);
+          }
+          
+          // Populate PR status table
+          displayPRStatusTable(activity);
 
           if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh'; }
         } catch (e) {
@@ -1001,50 +1519,169 @@
       }
 
       async function fetchGithubActivityData(accessToken) {
-        // Minimal fetch similar to dashboard logic; reads only and builds same structure
         const headers = { Authorization: `token ${accessToken}`, Accept: 'application/vnd.github.v3+json' };
-        // Basic account for username
+        
+        // Fetch user info (followers, following, etc.)
         const userRes = await fetch('https://api.github.com/user', { headers });
         if (!userRes.ok) throw new Error('GitHub auth failed');
         const user = await userRes.json();
+        const username = user.login;
 
-        // Repos
-        const reposRes = await fetch('https://api.github.com/user/repos?per_page=100&sort=updated', { headers });
+        // Fetch ALL repositories with pagination
+        let repositories = [];
+        let page = 1;
+        let hasMore = true;
+        
+        while (hasMore) {
+          const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&page=${page}&sort=updated`, { headers });
         if (!reposRes.ok) throw new Error('Failed to load repositories');
-        const repositories = await reposRes.json();
+          const pageRepos = await reposRes.json();
+          repositories = repositories.concat(pageRepos);
+          hasMore = pageRepos.length === 100;
+          page++;
+        }
 
-        // Events (for contributions, commits, PRs, issues)
-        const eventsRes = await fetch(`https://api.github.com/users/${user.login}/events?per_page=100`, { headers });
-        const events = eventsRes.ok ? await eventsRes.json() : [];
-        const prEvents = events.filter(e => e.type === 'PullRequestEvent');
-        const commits = events.filter(e => e.type === 'PushEvent').length;
-        const pullRequests = prEvents.length;
-        const issues = events.filter(e => e.type === 'IssuesEvent').length;
-        let openPRs = 0, mergedPRs = 0, closedPRs = 0;
-        prEvents.forEach(e => {
-          const pr = e && e.payload && e.payload.pull_request ? e.payload.pull_request : null;
-          if (!pr) return;
-          if (pr.merged) { mergedPRs += 1; }
-          else if (pr.state === 'closed') { closedPRs += 1; }
-          else if (pr.state === 'open') { openPRs += 1; }
-        });
-
-        // Improve PR status accuracy using Search API total_count (includes historical data)
+        // Use Search API for complete PR counts and data
+        let openPRs = 0, closedPRs = 0, mergedPRs = 0, totalIssues = 0;
+        let recentPRs = [];
+        
         try {
-          const searchBase = 'https://api.github.com/search/issues?q=';
-          const enc = encodeURIComponent;
-          const [openRes, closedRes, mergedRes] = await Promise.all([
-            fetch(`${searchBase}${enc(`is:pr author:${user.login} is:open`)}`, { headers }),
-            fetch(`${searchBase}${enc(`is:pr author:${user.login} is:closed`)}`, { headers }),
-            fetch(`${searchBase}${enc(`is:pr author:${user.login} is:merged`)}`, { headers }),
+          const [openPRsRes, mergedPRsRes, closedPRsRes, issuesRes] = await Promise.all([
+            fetch(`https://api.github.com/search/issues?q=author:${username}+type:pr+is:open&per_page=1`, { headers }),
+            fetch(`https://api.github.com/search/issues?q=author:${username}+type:pr+is:merged&per_page=1`, { headers }),
+            fetch(`https://api.github.com/search/issues?q=author:${username}+type:pr+is:closed+-is:merged&per_page=1`, { headers }),
+            fetch(`https://api.github.com/search/issues?q=author:${username}+type:issue&per_page=1`, { headers })
           ]);
-          if (openRes.ok) { const d = await openRes.json(); openPRs = d.total_count ?? openPRs; }
-          let closedTotal = closedPRs;
-          if (closedRes.ok) { const d = await closedRes.json(); closedTotal = d.total_count ?? closedPRs; }
-          if (mergedRes.ok) { const d = await mergedRes.json(); mergedPRs = d.total_count ?? mergedPRs; }
-          // closed includes merged; compute closed-only
-          closedPRs = Math.max(0, (closedTotal || 0) - (mergedPRs || 0));
-        } catch (_) {}
+          
+          if (openPRsRes.ok) {
+            const data = await openPRsRes.json();
+            openPRs = data.total_count || 0;
+          }
+          if (mergedPRsRes.ok) {
+            const data = await mergedPRsRes.json();
+            mergedPRs = data.total_count || 0;
+          }
+          if (closedPRsRes.ok) {
+            const data = await closedPRsRes.json();
+            closedPRs = data.total_count || 0;
+          }
+          if (issuesRes.ok) {
+            const data = await issuesRes.json();
+            totalIssues = data.total_count || 0;
+          }
+          
+          // Fetch detailed PR list (up to 100 most recent)
+          const prSearchRes = await fetch(`https://api.github.com/search/issues?q=author:${username}+type:pr&sort=created&order=desc&per_page=100`, { headers });
+          if (prSearchRes.ok) {
+            const prData = await prSearchRes.json();
+            recentPRs = prData.items.map(pr => ({
+              title: pr.title,
+              number: pr.number,
+              repo: pr.repository_url ? pr.repository_url.split('/').slice(-2).join('/') : 'Unknown',
+              state: pr.state,
+              created_at: pr.created_at,
+              updated_at: pr.updated_at,
+              url: pr.html_url,
+              body: pr.body || '',
+              comments: pr.comments || 0,
+              merged: pr.pull_request && pr.pull_request.merged_at ? true : false,
+              merged_at: pr.pull_request && pr.pull_request.merged_at ? pr.pull_request.merged_at : null
+            }));
+          }
+        } catch (searchError) {
+          console.error('Search API error:', searchError);
+        }
+        
+        // Fetch lifetime contributions using GraphQL API
+        let commits = 0;
+        let contributions = 0;
+        let contributionCalendar = null;
+        let events = []; // Declare events at top level for use later
+        
+        try {
+          // Use GraphQL for accurate lifetime contributions
+          const graphqlQuery = {
+            query: `
+              query($username: String!) {
+                user(login: $username) {
+                  contributionsCollection {
+                    contributionCalendar {
+                      totalContributions
+                      weeks {
+                        contributionDays {
+                          contributionCount
+                          date
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `,
+            variables: { username: username }
+          };
+          
+          const graphqlResponse = await fetch('https://api.github.com/graphql', {
+            method: 'POST',
+            headers: {
+              'Authorization': `bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(graphqlQuery)
+          });
+          
+          if (graphqlResponse.ok) {
+            const graphqlData = await graphqlResponse.json();
+            if (graphqlData.data && graphqlData.data.user) {
+              contributionCalendar = graphqlData.data.user.contributionsCollection.contributionCalendar;
+              contributions = contributionCalendar.totalContributions || 0;
+              console.log(`Total contributions (lifetime via GraphQL): ${contributions}`);
+            }
+          } else {
+            console.warn('GraphQL API failed:', graphqlResponse.status);
+          }
+        } catch (graphqlError) {
+          console.error('GraphQL API error:', graphqlError);
+        }
+        
+        // Fetch commits using Search API
+        try {
+          const commitsSearchRes = await fetch(`https://api.github.com/search/commits?q=author:${username}&per_page=1`, { 
+            headers: {
+              ...headers,
+              'Accept': 'application/vnd.github.cloak-preview+json'
+            }
+          });
+          
+          if (commitsSearchRes.ok) {
+            const commitsData = await commitsSearchRes.json();
+            commits = commitsData.total_count || 0;
+            console.log(`Total commits (lifetime): ${commits}`);
+          } else {
+            console.warn('Commits search failed:', commitsSearchRes.status);
+          }
+        } catch (commitsError) {
+          console.error('Commits API error:', commitsError);
+        }
+        
+        // Fetch events for issues count and fallback data
+        try {
+          const eventsRes = await fetch(`https://api.github.com/users/${username}/events?per_page=100`, { headers });
+          if (eventsRes.ok) {
+            events = await eventsRes.json();
+            console.log(`Events fetched: ${events.length}`);
+            
+            // Fallback if GraphQL or Search failed
+            if (contributions === 0) contributions = events.length;
+            if (commits === 0) {
+              commits = events.filter(event => event.type === 'PushEvent').reduce((total, event) => {
+                return total + (event.payload && event.payload.commits ? event.payload.commits.length : 0);
+              }, 0);
+            }
+          }
+        } catch (eventsError) {
+          console.error('Events API error:', eventsError);
+        }
 
         // Aggregate
         const totalStars = repositories.reduce((s, r) => s + (r.stargazers_count || 0), 0);
@@ -1052,7 +1689,7 @@
 
         // Aggregate languages by bytes using per-repo languages endpoint
         const languagesMap = {};
-        const languagesPromises = repositories.slice(0, 50).map(async (repo) => {
+        const languagesPromises = repositories.slice(0, 100).map(async (repo) => {
           try {
             const res = await fetch(repo.languages_url, { headers });
             if (!res.ok) return;
@@ -1064,44 +1701,57 @@
           } catch(_) {}
         });
         await Promise.all(languagesPromises);
-        let languages = Object.entries(languagesMap)
-          .sort((a,b)=>b[1]-a[1])
-          .slice(0,10)
-          .map(([language, count]) => ({ language, count }));
-        if (!languages.length) {
-          // Fallback to primary language count if bytes unavailable
-          repositories.forEach(r => { if (r.language) languagesMap[r.language] = (languagesMap[r.language] || 0) + 1; });
-          languages = Object.entries(languagesMap).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([language,count])=>({language,count}));
-        }
 
-        // recentPRs for trend
-        const recentPRs = events.filter(e => e.type === 'PullRequestEvent').map(e => ({ created_at: e.created_at }));
-
-        return {
-          reposContributed: repositories.length,
+        // Build activity data matching exact Firebase schema
+        const activityData = {
+          // Counts
+          commits: commits,
+          contributions: contributions,
+          followers: user.followers || 0,
+          following: user.following || 0,
+          issues: events && events.length > 0 ? events.filter(e => e.type === 'IssuesEvent').length : 0,
+          totalIssues: totalIssues,
+          openPRs: openPRs,
+          closedPRs: closedPRs,
+          mergedPRs: mergedPRs,
+          pullRequests: openPRs + closedPRs + mergedPRs,
           publicRepos: repositories.filter(r => !r.private).length,
           privateRepos: repositories.filter(r => r.private).length,
-          totalStars,
-          totalForks,
-          commits,
-          pullRequests,
-          issues,
-          openPRs,
-          mergedPRs,
-          closedPRs,
-          contributions: events.length,
-          lastActivity: events.length ? events[0].created_at : new Date().toISOString(),
-          languages,
+          totalStars: totalStars,
+          totalForks: totalForks,
+          
+          // Languages as map { languageName: bytes }
+          languages: languagesMap,
+          
+          // Recent PRs array with full details
+          recentPRs: recentPRs,
+          
+          // Contribution calendar from GraphQL
+          contributionCalendar: contributionCalendar,
+          
+          // Metadata
+          lastUpdated: new Date().toISOString(),
+          
+          // Legacy fields for backwards compatibility
+          reposContributed: repositories.length,
           topRepos: repositories.sort((a,b)=>b.stargazers_count-a.stargazers_count).slice(0,5).map(r=>({ name:r.name, stars:r.stargazers_count, forks:r.forks_count, language:r.language, url:r.html_url })),
-          activityFetchedAt: new Date().toISOString(),
-          recentPRs,
         };
+        
+        console.log('Activity data prepared:', {
+          commits: activityData.commits,
+          contributions: activityData.contributions,
+          pullRequests: activityData.pullRequests,
+          totalStars: activityData.totalStars
+        });
+        
+        return activityData;
       }
 
       function renderHeatmap(calendar) {
         const container = document.getElementById('heatmapPlaceholder');
         if (!container) return;
         container.innerHTML = '';
+        
         // Build a flat list by week columns
         const weeks = Array.isArray(calendar.weeks) ? calendar.weeks : [];
         weeks.forEach(week => {
@@ -1110,20 +1760,173 @@
           for (let i = 0; i < 7; i++) {
             const day = days[i] || {};
             const count = day.contributionCount || 0;
-            // Color scale (greens) inspired by GitHub
+            
+            // Enhanced color scale with more vibrant greens
             let color = '#ebedf0';
             if (count > 0) color = '#c6e48b';
             if (count > 3) color = '#7bc96f';
             if (count > 7) color = '#239a3b';
             if (count > 12) color = '#196127';
+            
             const cell = document.createElement('div');
             cell.className = 'heatmap-cell';
             cell.style.background = color;
-            cell.title = `${count} contributions${day.date ? ' on ' + day.date : ''}`;
+            
+            // Enhanced tooltip with formatted date
+            const date = day.date ? new Date(day.date).toLocaleDateString('en-US', { 
+              weekday: 'short', 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric' 
+            }) : '';
+            cell.title = `${count} contribution${count !== 1 ? 's' : ''}${date ? ' on ' + date : ''}`;
+            
+            // Add data attribute for potential interactions
+            if (day.date) {
+              cell.setAttribute('data-date', day.date);
+              cell.setAttribute('data-count', count);
+            }
+            
             container.appendChild(cell);
           }
         });
       }
+
+      // Display PR Status Breakdown Table
+      function displayPRStatusTable(activity) {
+        const tbody = document.getElementById('prStatusTableBody');
+        if (!tbody) return;
+        
+        const total = activity.pullRequests || 0;
+        
+        if (total === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">No pull requests found</td></tr>';
+          return;
+        }
+        
+        const rows = [
+          { status: 'Open', count: activity.openPRs || 0, color: '#10b981', icon: 'fa-circle-dot' },
+          { status: 'Merged', count: activity.mergedPRs || 0, color: '#8b5cf6', icon: 'fa-code-merge' },
+          { status: 'Closed', count: activity.closedPRs || 0, color: '#ef4444', icon: 'fa-circle-xmark' }
+        ];
+        
+        tbody.innerHTML = rows.map(row => {
+          const percentage = total > 0 ? ((row.count / total) * 100).toFixed(1) : 0;
+          return `
+            <tr>
+              <td>
+                <span class="pr-status-indicator" style="color: ${row.color};">
+                  <i class="fas ${row.icon}"></i> ${row.status}
+                </span>
+              </td>
+              <td style="font-weight: 600; font-size: 1.1rem;">${row.count}</td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <div class="pr-progress-bar">
+                    <div class="pr-progress-fill" style="width: ${percentage}%; background: ${row.color};"></div>
+                  </div>
+                  <span style="font-weight: 600; min-width: 50px;">${percentage}%</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        
+        // Add total row
+        tbody.innerHTML += `
+          <tr style="background: #f9fafb; font-weight: 600; border-top: 2px solid #e2e8f0;">
+            <td>Total</td>
+            <td style="font-size: 1.2rem; color: #667eea;">${total}</td>
+            <td>100%</td>
+          </tr>
+        `;
+      }
+
+      // Tab switching functionality
+      function setupTabs() {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab + '-tab').classList.add('active');
+          });
+        });
+      }
+
+      // Display Pull Requests tab
+      function displayPRsTab(prs) {
+        const container = document.getElementById('prList');
+        if (!prs || !prs.length) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-code-branch"></i><p>No pull requests found</p></div>';
+          return;
+        }
+        
+        container.innerHTML = prs.map(pr => {
+          const badgeClass = pr.merged ? 'merged' : pr.state;
+          const badgeText = pr.merged ? 'Merged' : (pr.state === 'open' ? 'Open' : 'Closed');
+          const repoName = pr.repo || 'Unknown';
+          const date = new Date(pr.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          
+          return `
+            <div class="pr-item">
+              <div class="pr-header">
+                <div style="flex: 1;">
+                  <h4 class="pr-title">
+                    <a href="${pr.url}" target="_blank" rel="noopener noreferrer">
+                      #${pr.number} ${pr.title}
+                    </a>
+                  </h4>
+                  <div class="pr-meta">
+                    <span><i class="fas fa-code-branch"></i> ${repoName}</span>
+                    <span><i class="fas fa-calendar"></i> ${date}</span>
+                    <span><i class="fas fa-comment"></i> ${pr.comments || 0} comments</span>
+                    ${pr.merged_at ? `<span><i class="fas fa-check"></i> Merged ${new Date(pr.merged_at).toLocaleDateString()}</span>` : ''}
+                  </div>
+                </div>
+                <span class="pr-badge ${badgeClass}">${badgeText}</span>
+              </div>
+              ${pr.body && pr.body.trim() ? `<p class="pr-body">${pr.body.substring(0, 250)}${pr.body.length > 250 ? '...' : ''}</p>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Display Repositories tab
+      function displayReposTab(repos) {
+        const container = document.getElementById('reposList');
+        if (!repos || !repos.length) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-folder"></i><p>No repositories found</p></div>';
+          return;
+        }
+        
+        // Sort by stars and take top repos
+        const sortedRepos = [...repos].sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0));
+        
+        container.innerHTML = sortedRepos.slice(0, 50).map(repo => {
+          return `
+            <div class="repo-item">
+              <h4 class="repo-name">
+                <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer">
+                  <i class="fas fa-folder"></i> ${repo.name}
+                </a>
+              </h4>
+              ${repo.description ? `<p class="pr-body">${repo.description}</p>` : ''}
+              <div class="repo-stats">
+                <span><i class="fas fa-star"></i> ${repo.stargazers_count || 0} stars</span>
+                <span><i class="fas fa-code-branch"></i> ${repo.forks_count || 0} forks</span>
+                ${repo.language ? `<span><i class="fas fa-code"></i> ${repo.language}</span>` : ''}
+                <span><i class="fas fa-${repo.private ? 'lock' : 'globe'}"></i> ${repo.private ? 'Private' : 'Public'}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Initialize tabs on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        setupTabs();
+      });
     </script>
   </body>
 </html>

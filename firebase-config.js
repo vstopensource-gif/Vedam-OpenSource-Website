@@ -17,13 +17,13 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-
 // These will be replaced by the build script in CI/CD
 // For local development, the dev server replaces these on-the-fly
 const firebaseConfig = {
-  apiKey: "VITE_FIREBASE_API_KEY",
-  authDomain: "VITE_FIREBASE_AUTH_DOMAIN",
-  projectId: "VITE_FIREBASE_PROJECT_ID",
-  storageBucket: "VITE_FIREBASE_STORAGE_BUCKET",
-  messagingSenderId: "VITE_FIREBASE_MESSAGING_SENDER_ID",
-  appId: "VITE_FIREBASE_APP_ID",
-  measurementId: "VITE_FIREBASE_MEASUREMENT_ID"
+  apiKey: "__FIREBASE_API_KEY__",
+  authDomain: "__FIREBASE_AUTH_DOMAIN__",
+  projectId: "__FIREBASE_PROJECT_ID__",
+  storageBucket: "__FIREBASE_STORAGE_BUCKET__",
+  messagingSenderId: "__FIREBASE_MESSAGING_SENDER_ID__",
+  appId: "__FIREBASE_APP_ID__",
+  measurementId: "__FIREBASE_MEASUREMENT_ID__"
 };
 
 // Initialize Firebase

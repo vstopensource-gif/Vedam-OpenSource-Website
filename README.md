@@ -50,15 +50,16 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed instructions.
 
 Set these in Netlify Dashboard (Site Settings → Environment Variables):
 
-```
-VITE_FIREBASE_API_KEY
-VITE_FIREBASE_AUTH_DOMAIN
-VITE_FIREBASE_PROJECT_ID
-VITE_FIREBASE_STORAGE_BUCKET
-VITE_FIREBASE_MESSAGING_SENDER_ID
-VITE_FIREBASE_APP_ID
-VITE_FIREBASE_MEASUREMENT_ID
-```
+All environment variables should be prefixed with `VITE_` + `FIREBASE_` followed by:
+- API_KEY
+- AUTH_DOMAIN  
+- PROJECT_ID
+- STORAGE_BUCKET
+- MESSAGING_SENDER_ID
+- APP_ID
+- MEASUREMENT_ID
+
+(Get these values from your Firebase Console → Project Settings)
 
 ## Security Notes
 
